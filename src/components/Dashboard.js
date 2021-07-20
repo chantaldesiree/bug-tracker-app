@@ -79,9 +79,20 @@ function Dashboard() {
             borderRadius: 10,
           }}
         >
-          <h1 style={{ color: "#0029e0" }}>
-            Signed In User: {JSON.stringify(currentUser)}
-          </h1>
+          <h1 style={{ color: "#0029e0" }}>Signed In User:</h1>
+          <div style={{ maxWidth: "500px", display: "block" }}>
+            {currentUser.email}
+            {/* {Object.keys(currentUser).map((u) => {
+              return (
+                <>
+                  <div>{u}</div>{" "}
+                  {Object.values(u).map((v) => {
+                    return <div>{v}</div>;
+                  })}
+                </>
+              );
+            })} */}
+          </div>
         </Container>
       </div>
     </>

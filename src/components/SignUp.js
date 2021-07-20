@@ -13,19 +13,31 @@ function SignUp() {
   const history = useHistory();
 
   function userLogin() {
-    signin("user@user.com", "password");
+    signin(
+      process.env.REACT_APP_LOGIN_USER,
+      process.env.REACT_APP_LOGIN_PASSWORD
+    );
     history.push("/");
   }
   function supportLogin() {
-    signin("support@support.com", "password");
+    signin(
+      process.env.REACT_APP_LOGIN_SUPPORT,
+      process.env.REACT_APP_LOGIN_PASSWORD
+    );
     history.push("/");
   }
   function adminLogin() {
-    signin("admin@admin.com", "password");
+    signin(
+      process.env.REACT_APP_LOGIN_ADMIN,
+      process.env.REACT_APP_LOGIN_PASSWORD
+    );
     history.push("/");
   }
   function superAdminLogin() {
-    signin("superadmin@superadmin.com", "password");
+    signin(
+      process.env.REACT_APP_LOGIN_SUPERADMIN,
+      process.env.REACT_APP_LOGIN_PASSWORD
+    );
     history.push("/");
   }
 

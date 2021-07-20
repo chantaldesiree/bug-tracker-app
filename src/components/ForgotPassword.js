@@ -6,7 +6,7 @@ import { Link, useHistory } from "react-router-dom";
 function ForgotPassword() {
   const emailRef = useRef();
   const passwordRef = useRef();
-  const { signin, signout, currentUser } = useAuth();
+  const { passwordreset } = useAuth();
   const [error, setError] = useState(``);
   const [loading, setLoading] = useState(false);
   const history = useHistory();
@@ -24,18 +24,11 @@ function ForgotPassword() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (
-      emailRef.current.value.length < 6 ||
-      passwordRef.current.value.length < 6
-    ) {
-      return setError("Please provide a correct password.");
-    }
-
     try {
       setError(``);
       setLoading(true);
-      await signin(emailRef.current.value, passwordRef.current.value);
-      history.push("/");
+      await passwordreset(emailRef.current.value);
+      history.push("/SignIn");
     } catch (error) {
       setError(error.message);
     }
@@ -60,12 +53,8 @@ function ForgotPassword() {
                   <Form.Label>Email</Form.Label>
                   <Form.Control type="email" ref={emailRef} required />
                 </Form.Group>
-                <Form.Group id="password">
-                  <Form.Label>Password</Form.Label>
-                  <Form.Control type="password" ref={passwordRef} required />
-                </Form.Group>
                 <Button className="w-100 mt-4" type="submit">
-                  Sign In
+                  Reset Your Password
                 </Button>
               </Form>
             </Card.Body>
