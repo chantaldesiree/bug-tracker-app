@@ -1,10 +1,11 @@
 import firebase from "firebase/app";
+import "firebase/firestore";
 import "firebase/auth";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 // Initialize Firebase
-const appConfig = firebase.initializeApp({
+const fb = firebase.initializeApp({
   apiKey: process.env.REACT_APP_FIRESTORE_API_KEY,
   authDomain: process.env.REACT_APP_FIRESTORE_AUTH_DOMAIN,
   projectId: process.env.REACT_APP_FIRESTORE_PROJECT_ID,
@@ -14,7 +15,8 @@ const appConfig = firebase.initializeApp({
   measurementId: process.env.REACT_APP_FIRESTORE_MEASUREMENT_ID,
 });
 
-export const auth = appConfig.auth();
-const db = appConfig.firestore();
+export const auth = fb.auth();
+const db = fb.firestore();
+const currentTimestamp = firebase.firestore.Timestamp.now();
 
-export { db };
+export { db, currentTimestamp };
