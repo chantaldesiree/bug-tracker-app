@@ -2,24 +2,15 @@ import { Form, Button, Card, Alert } from "react-bootstrap";
 import { useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
+import { db } from "../firebase";
+import PremadeProfile from "./PremadeProfiles";
 
 function SignIn() {
-  const emailRef = useRef();
   const passwordRef = useRef();
-  const { signin, signout, currentUser } = useAuth();
+  const { signin, currentUser } = useAuth();
   const [error, setError] = useState(``);
-  const [loading, setLoading] = useState(false);
   const history = useHistory();
-
-  const profileStyle = {
-    width: "80px",
-    height: "80px",
-    color: "#e8ecfd",
-    borderRadius: "50%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  };
+  const emailRef = useRef();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -33,10 +24,10 @@ function SignIn() {
 
     try {
       setError(``);
-      setLoading(true);
       await signin(emailRef.current.value, passwordRef.current.value).then(
         () => {
-          if (currentUser.username == undefined) {
+          let user = db.collection("users").doc(currentUser.email).get();
+          if (user === undefined) {
             history.push("/AccountCreation");
           } else {
             history.push("/");
@@ -89,23 +80,7 @@ function SignIn() {
               <span style={{ color: "#1266F1" }}>Sign up here.</span>
             </Link>
           </div>
-          <div className="mt-5 text-center">
-            <h4 className="pb-3 text-light">Or use a premade profile:</h4>
-            <div className="d-flex justify-content-between align-items-center flex-wrap-wrap">
-              <Button style={profileStyle}>
-                <h6>User</h6>
-              </Button>
-              <Button style={profileStyle}>
-                <h6>Support</h6>
-              </Button>
-              <Button style={profileStyle}>
-                <h6>Admin</h6>
-              </Button>
-              <Button style={profileStyle}>
-                <h6>Super Admin</h6>
-              </Button>
-            </div>
-          </div>
+          <PremadeProfile />
         </div>
       </div>
     </>

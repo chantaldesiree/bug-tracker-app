@@ -2,31 +2,19 @@ import { Form, Button, Card, Alert } from "react-bootstrap";
 import { useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
+import PremadeProfile from "./PremadeProfiles";
 
 function ForgotPassword() {
   const emailRef = useRef();
-  const passwordRef = useRef();
   const { passwordreset } = useAuth();
   const [error, setError] = useState(``);
-  const [loading, setLoading] = useState(false);
   const history = useHistory();
-
-  const profileStyle = {
-    width: "80px",
-    height: "80px",
-    color: "#e8ecfd",
-    borderRadius: "50%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  };
 
   async function handleSubmit(e) {
     e.preventDefault();
 
     try {
       setError(``);
-      setLoading(true);
       await passwordreset(emailRef.current.value);
       history.push("/SignIn");
     } catch (error) {
@@ -71,23 +59,7 @@ function ForgotPassword() {
               <span style={{ color: "#1266F1" }}>Sign up here.</span>
             </Link>
           </div>
-          <div className="mt-5 text-center">
-            <h4 className="pb-3 text-light">Or use a premade profile:</h4>
-            <div className="d-flex justify-content-between align-items-center flex-wrap-wrap">
-              <Button style={profileStyle}>
-                <h6>User</h6>
-              </Button>
-              <Button style={profileStyle}>
-                <h6>Support</h6>
-              </Button>
-              <Button style={profileStyle}>
-                <h6>Admin</h6>
-              </Button>
-              <Button style={profileStyle}>
-                <h6>Super Admin</h6>
-              </Button>
-            </div>
-          </div>
+          <PremadeProfile />
         </div>
       </div>
     </>

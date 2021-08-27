@@ -3,43 +3,16 @@ import { useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
 
+import PremadeProfile from "./PremadeProfiles";
+
 function SignUp() {
   const emailRef = useRef();
   const passwordRef = useRef();
   const passwordConfirmRef = useRef();
-  const { signup, signin, currentUser } = useAuth();
+  const { signup, signin } = useAuth();
   const [error, setError] = useState(``);
   const [loading, setLoading] = useState(false);
   const history = useHistory();
-
-  function userLogin() {
-    signin(
-      process.env.REACT_APP_LOGIN_USER,
-      process.env.REACT_APP_LOGIN_PASSWORD
-    );
-    history.push("/");
-  }
-  function supportLogin() {
-    signin(
-      process.env.REACT_APP_LOGIN_SUPPORT,
-      process.env.REACT_APP_LOGIN_PASSWORD
-    );
-    history.push("/");
-  }
-  function adminLogin() {
-    signin(
-      process.env.REACT_APP_LOGIN_ADMIN,
-      process.env.REACT_APP_LOGIN_PASSWORD
-    );
-    history.push("/");
-  }
-  function superAdminLogin() {
-    signin(
-      process.env.REACT_APP_LOGIN_SUPERADMIN,
-      process.env.REACT_APP_LOGIN_PASSWORD
-    );
-    history.push("/");
-  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -58,21 +31,11 @@ function SignUp() {
           signin(emailRef.current.value, passwordRef.current.value);
         }
       );
-      history.push("/");
+      history.push("/SignIn");
     } catch {
       setError("Failed to create account.");
     }
   }
-
-  const profileStyle = {
-    width: "80px",
-    height: "80px",
-    color: "#e8ecfd",
-    borderRadius: "50%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  };
 
   return (
     <>
@@ -118,23 +81,7 @@ function SignUp() {
               <span style={{ color: "#1266F1" }}>Sign In</span>
             </Link>
           </div>
-          <div className="mt-5 text-center">
-            <h4 className="pb-3 text-light">Or use a premade profile:</h4>
-            <div className="d-flex justify-content-between align-items-center flex-wrap-wrap">
-              <Button style={profileStyle} onClick={userLogin}>
-                <h6>User</h6>
-              </Button>
-              <Button style={profileStyle} onClick={supportLogin}>
-                <h6>Support</h6>
-              </Button>
-              <Button style={profileStyle} onClick={adminLogin}>
-                <h6>Admin</h6>
-              </Button>
-              <Button style={profileStyle} onClick={superAdminLogin}>
-                <h6>Super Admin</h6>
-              </Button>
-            </div>
-          </div>
+          <PremadeProfile />
         </div>
       </div>
     </>
