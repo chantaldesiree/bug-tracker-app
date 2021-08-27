@@ -1,39 +1,25 @@
-import {
-  Form,
-  Button,
-  Card,
-  Alert,
-  Container,
-  DropdownButton,
-  Dropdown,
-} from "react-bootstrap";
+import { Form, Button, Card, Alert, Dropdown } from "react-bootstrap";
 import { useRef, useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
-import { db } from ".././firebase";
+import { db, currentTimestamp } from ".././firebase";
 
 import { Country, State, City } from "country-state-city";
 import postalCodes from "postal-codes-js";
 
-import DatePicker from "react-datepicker";
-
 function AccountCreation() {
+  const { currentUser } = useAuth();
   const usernameRef = useRef();
   const firstNameRef = useRef();
   const lastNameRef = useRef();
   const phoneNumberRef = useRef();
   const streetAddressRef = useRef();
-  const cityRef = useRef();
-  const countryRef = useRef();
   const postalCodeRef = useRef();
-  const [date, setDate] = useState();
-  const { currentUser } = useAuth();
   const [error, setError] = useState(``);
-  const [loading, setLoading] = useState(false);
   const history = useHistory();
 
-  const [countries, setCountries] = useState(Country.getAllCountries());
+  const [countries] = useState(Country.getAllCountries());
   const [country, setCountry] = useState("Country");
   const [countryISO, setCountryISO] = useState();
 
@@ -47,10 +33,6 @@ function AccountCreation() {
   const [postalCode, setPostalCode] = useState("");
 
   useEffect(() => {
-    setDate(Date.now());
-  }, []);
-
-  useEffect(() => {
     setProvince("Province");
     setProvinces(State.getStatesOfCountry(countryISO));
   }, [country]);
@@ -60,19 +42,22 @@ function AccountCreation() {
     setCities(City.getCitiesOfState(countryISO, provinceISO));
   }, [province]);
 
-  useEffect(() => {
-    console.log(validPostalCode(postalCode));
-  }, [postalCode]);
+  async function validUsername() {
+    let valid = true;
 
-  function checkUsernames(username) {
-    db.collection("users").where();
+    await db
+      .collection("users")
+      .doc(usernameRef.current.value)
+      .get()
+      .then((docSnapshot) => {
+        if (docSnapshot.exists) {
+          valid = false;
+        }
+      });
+    return valid;
   }
 
-  function handleDateChange(date) {
-    setDate(date);
-  }
-
-  function validPostalCode(postalCode) {
+  /*   function validPostalCode(postalCode) {
     postalCode = postalCode.toString().trim();
 
     var regexUS = new RegExp("^\\d{5}(-{0,1}\\d{4})?$");
@@ -80,34 +65,77 @@ function AccountCreation() {
       /([ABCEGHJKLMNPRSTVXY]\d)([ABCEGHJKLMNPRSTVWXYZ]\d){2}/i
     );
 
-    if (countryISO == "US" && regexUS.test(postalCode.toString())) {
+    if (countryISO === "US" && regexUS.test(postalCode.toString())) {
       return true;
     }
 
     if (
-      countryISO == "CA" &&
+      countryISO === "CA" &&
       regexCA.test(postalCode.toString().replace(/\W+/g, ""))
     ) {
       return true;
     }
     return false;
-  }
+  } */
 
   async function handleSubmit(e) {
     e.preventDefault();
-
-    if (
-      usernameRef.current.value.length < 6 ||
-      firstNameRef.current.value.length < 6
-    ) {
-      return setError("Please provide a correct firstName.");
-    }
+    setError("");
 
     try {
-      setError(``);
-      setLoading(true);
+      var valid = await validUsername();
 
-      history.push("/");
+      if (!valid) {
+        setError("Sorry, that username is already taken.");
+      }
+
+      if (usernameRef.current.value.length < 6) {
+        setError("Sorry, Your usename must be at least 6 characters long.");
+      }
+
+      if (usernameRef.current.value.length > 16) {
+        setError(
+          "Sorry, Your usename must be less than or equal to 16 characters."
+        );
+      }
+
+      if (phoneNumberRef.current.value.trim() !== 10) {
+        setError("Please enter your 10 digit phone number.");
+      }
+
+      if (streetAddressRef.current.value.length < 6) {
+        setError("Please enter a correct Street Address.");
+      }
+
+      if (countryISO === undefined) {
+        setError("Please select a country.");
+      }
+      if (provinceISO === undefined) {
+        setError("Please select a province or state.");
+      }
+      if (city === "City") {
+        setError("Please select a city.");
+      }
+
+      console.log(error);
+      if (error === "") {
+        db.collection("users")
+          .doc(currentUser.email)
+          .set({
+            firstName: firstNameRef.current.value,
+            lastName: lastNameRef.current.value,
+            streetAddress: streetAddressRef.current.value,
+            city: city,
+            province: province,
+            country: country,
+            postalCode: postalCode,
+            phoneNumber: phoneNumberRef.current.value,
+            joinDate: currentTimestamp,
+          })
+          .then(() => {
+            history.push("/");
+          });
+      }
     } catch (error) {
       setError(error.message);
     }
@@ -302,23 +330,12 @@ function AccountCreation() {
                         e.target.value
                       );
                       console.log(valid);
-                      if (valid == true) {
+                      if (valid === true) {
                         setPostalCode(e.target.value);
                       }
                     }}
                     required
                   />
-                </Form.Group>
-                <Form.Group id="calendar">
-                  <Form.Label>Birthday</Form.Label>
-                  <div className="d-flex justify-content-center align-items-center">
-                    <DatePicker
-                      selected={date}
-                      onChange={handleDateChange}
-                      startDate={date}
-                      inline
-                    />
-                  </div>
                 </Form.Group>
                 <Button className="w-100 mt-4" type="submit">
                   Create Account
