@@ -1,24 +1,71 @@
 import { Form, Button, Card, Container } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { db } from ".././firebase";
 
 function Dashboard() {
   const buttons = ["Home", "Issues", "Reports", "Members"];
   const { signout, currentUser } = useAuth();
   const history = useHistory();
-  const [error, setError] = useState();
+  const [user, setUser] = useState();
+  const [users, setUsers] = useState([]);
+
+  async function getUser() {
+    await db
+      .collection("users")
+      .doc(currentUser.email)
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          setUser(doc.data());
+        } else {
+          // doc.data() will be undefined in this case
+          console.log("No such document!");
+        }
+      })
+      .catch((error) => {
+        console.log("Error getting document:", error);
+      });
+  }
+
+  async function getUsers() {
+    await db
+      .collection("users")
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          let userData = doc.data();
+          userData.id = doc.id;
+          setUsers((users) => [...users, userData]);
+        });
+      })
+      .catch((error) => {
+        console.log("Error getting documents: ", error);
+      });
+  }
+
+  useEffect(() => {
+    getUser();
+  }, []);
+
+  useEffect(() => {
+    if (
+      user &&
+      users.length == 0 &&
+      (user.role === "SuperAdmin" || user.role === "Admin")
+    ) {
+      getUsers();
+    }
+  }, [user]);
 
   async function handleSignOut(e) {
     e.preventDefault();
 
     try {
-      setError(``);
       await signout();
       history.push("/SignUp");
-    } catch (error) {
-      setError(error.message);
-    }
+    } catch {}
   }
 
   return (
@@ -36,7 +83,7 @@ function Dashboard() {
             background: "linear-gradient(#0029e0, #00043f)",
             color: "text-primary",
             fontWeight: "bold",
-            maxWidth: "190px",
+            minWidth: "200px",
             minHeight: "100vh",
           }}
         >
@@ -48,7 +95,7 @@ function Dashboard() {
               fontSize: "1.75em",
             }}
           >
-            Dashboard
+            Bug Tracker
           </div>
 
           {buttons.map((b) => {
@@ -56,6 +103,7 @@ function Dashboard() {
               <div
                 className="mx-3 my-4"
                 style={{ color: "#e8ecfd", fontSize: "1.25em" }}
+                key={b}
               >
                 {b}
               </div>
@@ -72,27 +120,46 @@ function Dashboard() {
             Sign Out
           </Button>
         </div>
-        <Container
-          className="flex-row text-primary m-5 p-3"
-          style={{
-            background: "linear-gradient(#e8ecfd, #001e7f)",
-            borderRadius: 10,
-          }}
-        >
-          <h1 style={{ color: "#0029e0" }}>Signed In User:</h1>
-          <div style={{ maxWidth: "500px", display: "block" }}>
-            {currentUser.email}
-            {/* {Object.keys(currentUser).map((u) => {
-              return (
+        <Container className="flex-row text-primary m-5 p-3">
+          {user ? (
+            <div>
+              <h1 style={{ color: "#e8ecfd" }}>
+                {user.firstName} {user.lastName}
+              </h1>
+              <h3 style={{ opacity: 0.95 }}>Username: {user.username}</h3>
+              <h5 className="pt-1 pb-1" style={{ opacity: 0.75 }}>
+                Role: {user.role}
+              </h5>
+              <div style={{ opacity: 0.7 }}>
+                <div>City: {user.city}</div>
+                <div>Province: {user.province}</div>
+                <div>Country: {user.country}</div>
+                <div>Phone Number: {user.phoneNumber}</div>
+              </div>
+              {users.length > 0 ? (
                 <>
-                  <div>{u}</div>{" "}
-                  {Object.values(u).map((v) => {
-                    return <div>{v}</div>;
-                  })}
+                  <div className="pt-5">
+                    <h3 style={{ color: "#e8ecfd" }}>All Users:</h3>
+
+                    {users.map((u) => {
+                      {
+                        return (
+                          <div key={u.id} className="pt-2 pb-2">
+                            <h4 style={{ opacity: 0.9 }}>{u.username}</h4>
+                            <div>Email: {u.id}</div>
+                          </div>
+                        );
+                      }
+                    })}
+                  </div>
                 </>
-              );
-            })} */}
-          </div>
+              ) : (
+                <></>
+              )}
+            </div>
+          ) : (
+            <></>
+          )}
         </Container>
       </div>
     </>

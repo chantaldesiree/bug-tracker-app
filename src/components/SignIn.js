@@ -26,12 +26,16 @@ function SignIn() {
       setError(``);
       await signin(emailRef.current.value, passwordRef.current.value).then(
         () => {
-          let user = db.collection("users").doc(currentUser.email).get();
-          if (user === undefined) {
-            history.push("/AccountCreation");
-          } else {
-            history.push("/");
-          }
+          db.collection("users")
+            .doc(emailRef.current.value)
+            .get()
+            .then((doc) => {
+              if (doc.data().firstName === undefined) {
+                history.push("/AccountCreation");
+              } else {
+                history.push("/");
+              }
+            });
         }
       );
     } catch (error) {

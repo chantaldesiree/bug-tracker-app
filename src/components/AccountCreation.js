@@ -11,6 +11,7 @@ import postalCodes from "postal-codes-js";
 function AccountCreation() {
   const { currentUser } = useAuth();
   const usernameRef = useRef();
+  const [username, setUsername] = useState();
   const firstNameRef = useRef();
   const lastNameRef = useRef();
   const phoneNumberRef = useRef();
@@ -35,24 +36,39 @@ function AccountCreation() {
   useEffect(() => {
     setProvince("Province");
     setProvinces(State.getStatesOfCountry(countryISO));
-  }, [country]);
+  }, [country, countryISO]);
 
   useEffect(() => {
     setCity("City");
     setCities(City.getCitiesOfState(countryISO, provinceISO));
-  }, [province]);
+  }, [province, provinceISO, countryISO]);
 
   async function validUsername() {
     let valid = true;
 
+    setUsername(
+      (
+        firstNameRef.current.value +
+        "-" +
+        lastNameRef.current.value
+      ).toLowerCase()
+    );
+
     await db
       .collection("users")
-      .doc(usernameRef.current.value)
+      .where(
+        "username",
+        "==",
+        firstNameRef.current.value + "-" + lastNameRef.current.value
+      )
       .get()
-      .then((docSnapshot) => {
-        if (docSnapshot.exists) {
+      .then((querySnapshot) => {
+        if (querySnapshot.length > 0) {
           valid = false;
         }
+      })
+      .catch((error) => {
+        console.log("Error getting documents: ", error);
       });
     return valid;
   }
@@ -89,17 +105,17 @@ function AccountCreation() {
         setError("Sorry, that username is already taken.");
       }
 
-      if (usernameRef.current.value.length < 6) {
+      if (username < 6) {
         setError("Sorry, Your usename must be at least 6 characters long.");
       }
 
-      if (usernameRef.current.value.length > 16) {
+      if (username > 16) {
         setError(
           "Sorry, Your usename must be less than or equal to 16 characters."
         );
       }
 
-      if (phoneNumberRef.current.value.trim() !== 10) {
+      if (phoneNumberRef.current.value.length < 10) {
         setError("Please enter your 10 digit phone number.");
       }
 
@@ -122,6 +138,7 @@ function AccountCreation() {
         db.collection("users")
           .doc(currentUser.email)
           .set({
+            username: username,
             firstName: firstNameRef.current.value,
             lastName: lastNameRef.current.value,
             streetAddress: streetAddressRef.current.value,
@@ -131,6 +148,7 @@ function AccountCreation() {
             postalCode: postalCode,
             phoneNumber: phoneNumberRef.current.value,
             joinDate: currentTimestamp,
+            role: "User",
           })
           .then(() => {
             history.push("/");
@@ -156,10 +174,10 @@ function AccountCreation() {
               <h2 className="text-center mb-4">Account Creation</h2>
               {error && <Alert variant="danger">{error}</Alert>}
               <Form onSubmit={handleSubmit}>
-                <Form.Group id="username">
+                {/* <Form.Group id="username">
                   <Form.Label>Username</Form.Label>
                   <Form.Control type="username" ref={usernameRef} required />
-                </Form.Group>
+                </Form.Group> */}
                 <Form.Group id="firstName">
                   <Form.Label>First Name</Form.Label>
                   <Form.Control type="firstName" ref={firstNameRef} required />

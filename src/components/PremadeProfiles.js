@@ -4,7 +4,7 @@ import { Button } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 
 function PremadeProfile() {
-  const { signin, signout, currentUser } = useAuth();
+  const { signin, currentUser } = useAuth();
   const history = useHistory();
 
   const profileStyle = {
