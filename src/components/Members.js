@@ -1,9 +1,36 @@
 import React from "react";
 import { Button, Container, Row, Col } from "react-bootstrap";
-import { useAuth } from "../contexts/AuthContext";
 import Nav from "../components/Nav";
+import { useState, useEffect } from "react";
+import { db } from ".././firebase";
+import { Link } from "react-router-dom";
 
 function Members() {
+  const [user, setUser] = useState();
+  const [users, setUsers] = useState([]);
+
+  async function getUsers() {
+    await db
+      .collection("users")
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          let userData = doc.data();
+          userData.id = doc.id;
+          setUsers((users) => [...users, userData]);
+        });
+      })
+      .catch((error) => {
+        console.log("Error getting documents: ", error);
+      });
+  }
+
+  useEffect(() => {
+    if (users.length == 0) {
+      getUsers();
+    }
+  }, []);
+
   return (
     <>
       <Container
@@ -32,7 +59,7 @@ function Members() {
             <Container
               className="mx-0"
               style={{
-                backgroundColor: "#131e61",
+                backgroundColor: "#020a40",
                 padding: "12px",
                 borderRadius: "5px",
                 color: "#d3d9ff",
@@ -41,11 +68,29 @@ function Members() {
               }}
             >
               <Row style={{ color: "#e8ecfd" }}>
-                <Col>Username:</Col>
-                <Col>Last Name:</Col>
-                <Col>First Name:</Col>
-                <Col>Tickets Assigned:</Col>
-                <Col>Tickets Completed:</Col>
+                <Col>
+                  <Row className="py-2">
+                    <h5>Username:</h5>
+                  </Row>
+                  {users ? (
+                    <>
+                      {users.map((u) => {
+                        let url = `/members/${u.username}`;
+                        return (
+                          <>
+                            <Row>
+                              <Link to={url}>
+                                <h6>{u.username}</h6>
+                              </Link>
+                            </Row>
+                          </>
+                        );
+                      })}
+                    </>
+                  ) : (
+                    <></>
+                  )}
+                </Col>
               </Row>
             </Container>
           </Container>
