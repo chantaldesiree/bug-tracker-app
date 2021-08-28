@@ -70,6 +70,7 @@ function Dashboard() {
             backgroundColor: "#000550",
             minHeight: "100vh",
             minWidth: "100%",
+            paddingTop: "15px",
           }}
         >
           <Nav />
@@ -99,17 +100,11 @@ function Dashboard() {
                     </h2>
                   </div>
                 </Col>
-                <Col
-                  className="px-1"
-                  xs={12}
-                  lg={8}
-                  style={{ color: "#000550" }}
-                >
+                <Col className="px-1 text-light" xs={12} lg={8}>
                   <Container
-                    className="d-flex justify-content-center align-items-center px-0"
+                    className="d-flex bg-primary justify-content-center align-items-center px-0"
                     fluid
                     style={{
-                      backgroundColor: "#e8ecfd",
                       borderRadius: "5px",
                       paddingTop: "8px",
                       paddingBottom: "6px",
@@ -122,14 +117,14 @@ function Dashboard() {
               </Row>
               <Row>
                 <Container
-                  className="d-flex justify-content-center align-items-center bg-primary mt-3"
+                  className="d-flex justify-content-center align-items-center bg-light mt-3"
                   style={{
                     borderRadius: "5px",
                     paddingTop: "9px",
                     paddingBottom: "6px",
                   }}
                 >
-                  <h5 style={{ color: "#e8ecfd" }}>Where you left off:</h5>
+                  <h5 style={{ color: "#000550" }}>Where you left off:</h5>
                 </Container>
                 <Container className="px-4">
                   <TicketPreview

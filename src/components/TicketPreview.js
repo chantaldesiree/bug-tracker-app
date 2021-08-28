@@ -16,13 +16,12 @@ function TicketPreview(props) {
   return (
     <Container
       style={{
-        backgroundColor: "#131e61",
+        backgroundColor: "#020a40",
         paddingTop: "12px",
         paddingBottom: "1px",
         borderRadius: "5px",
         color: "#d3d9ff",
         marginTop: "10px",
-        marginBottom: "10px",
       }}
     >
       <Row className="d-flex justify-content-between">

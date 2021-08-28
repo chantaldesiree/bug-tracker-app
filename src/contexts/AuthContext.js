@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
+import { Container } from "react-bootstrap";
 import { auth, db } from "../firebase";
 
 const AuthContext = React.createContext();
@@ -45,7 +46,16 @@ export function AuthProvider(children) {
   };
 
   if (loading) {
-    return <>Loading...</>;
+    return (
+      <Container
+        style={{
+          backgroundColor: "#000550",
+          minHeight: "100vh",
+          minWidth: "100%",
+          paddingTop: "15px",
+        }}
+      />
+    );
   }
 
   return (

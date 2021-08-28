@@ -115,7 +115,10 @@ function AccountCreation() {
         );
       }
 
-      if (phoneNumberRef.current.value.length < 10) {
+      if (
+        phoneNumberRef.current.value.length < 10 ||
+        isNaN(phoneNumberRef.current.value)
+      ) {
         setError("Please enter your 10 digit phone number.");
       }
 

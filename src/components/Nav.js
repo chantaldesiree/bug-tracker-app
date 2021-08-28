@@ -64,14 +64,17 @@ function DashboardNav() {
             <NavDropdown title="Tickets" id="basic-nav-dropdown">
               <ul style={{ paddingLeft: 0, marginBottom: 0 }}>
                 {tickets.map((t) => {
-                  let link = "#" + t.toLowerCase().replace(/\s/g, "-");
                   return (
                     <div
                       className="py-2"
                       style={{ color: "#e8ecfd", fontSize: "1em" }}
                       key={t}
                     >
-                      <NavDropdown.Item href={link}>{t}</NavDropdown.Item>
+                      <NavDropdown.Item
+                        href={t.toLowerCase().replace(/\s/g, "-")}
+                      >
+                        {t}
+                      </NavDropdown.Item>
                     </div>
                   );
                 })}
