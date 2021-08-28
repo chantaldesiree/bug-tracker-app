@@ -1,33 +1,34 @@
 import { Form, Button, Card, Alert, Container } from "react-bootstrap";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
 import PremadeProfile from "./PremadeProfiles";
 import TicketPreview from "./TicketPreview";
+import { db } from ".././firebase";
 
 function TicketPreviewContainer() {
-  const tickets = [
-    {
-      id: 2,
-      name: "Navigation Menu",
-      desc: "The navigation menu doesn't show up properly on mobile.",
-    },
-    {
-      id: 3,
-      name: "Account Creation",
-      desc: "Validation doesn't work properly for international phone numbers.",
-    },
-    {
-      id: 4,
-      name: "Profile Change",
-      desc: "Profile changes are not saved to the users information.",
-    },
-    {
-      id: 5,
-      name: "Admin Access",
-      desc: "Neither Admins or SuperAdmins are able to see more than a Support or User account.",
-    },
-  ];
+  const [tickets, setTickets] = useState([]);
+
+  async function getTickets() {
+    await db
+      .collection("tickets")
+      .orderBy("id")
+      .limit(5)
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          let ticketData = doc.data();
+          setTickets((tickets) => [...tickets, ticketData]);
+        });
+      })
+      .catch((error) => {
+        console.log("Error getting documents: ", error);
+      });
+  }
+
+  useEffect(() => {
+    if (tickets.length === 0) getTickets();
+  }, []);
 
   return (
     <Container
@@ -37,9 +38,19 @@ function TicketPreviewContainer() {
         borderRadius: "5px",
       }}
     >
-      {tickets.map((t) => {
-        return <TicketPreview number={t.id} title={t.name} desc={t.desc} />;
-      })}
+      {tickets &&
+        tickets.map((t) => {
+          return (
+            <TicketPreview
+              number={t.id}
+              title={t.title}
+              desc={t.desc}
+              createdAt={t.createdAt.toDate().toLocaleString()}
+              lastModifiedAt={t.lastModifiedAt.toDate().toLocaleString()}
+              createdBy={t.ownerUsername}
+            />
+          );
+        })}
     </Container>
   );
 }

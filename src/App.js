@@ -11,6 +11,7 @@ import AccountCreation from "./components/AccountCreation";
 import ForgotPassword from "./components/ForgotPassword";
 import Members from "./components/Members";
 import Profile from "./components/Profile";
+import CreateTicket from "./components/CreateTicket";
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
             />
             <PrivateRoute path="/members" component={Members} />
             <PrivateRoute path="/profile" component={Profile} />
+            <PrivateRoute path="/create-a-ticket" component={CreateTicket} />
             <Route path="/sign-up" component={SignUp} />
             <Route path="/sign-in" component={SignIn} />
             <Route path="/forgot-password" component={ForgotPassword} />

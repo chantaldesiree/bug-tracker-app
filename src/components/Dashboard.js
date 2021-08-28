@@ -13,6 +13,7 @@ function Dashboard() {
   const history = useHistory();
   const [user, setUser] = useState();
   const [users, setUsers] = useState([]);
+  const [lastTicket, setLastTicket] = useState([]);
 
   async function getUser() {
     await db
@@ -29,6 +30,23 @@ function Dashboard() {
       })
       .catch((error) => {
         console.log("Error getting document:", error);
+      });
+  }
+
+  async function getLastTicket() {
+    await db
+      .collection("tickets")
+      .where("owner", "==", currentUser.email)
+      .limit(1)
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          let ticketData = doc.data();
+          setLastTicket((lastTicket) => [...lastTicket, ticketData]);
+        });
+      })
+      .catch((error) => {
+        console.log("Error getting documents: ", error);
       });
   }
 
@@ -50,6 +68,7 @@ function Dashboard() {
 
   useEffect(() => {
     getUser();
+    if (lastTicket.length === 0) getLastTicket();
   }, []);
 
   useEffect(() => {
@@ -127,11 +146,22 @@ function Dashboard() {
                   <h5 style={{ color: "#000550" }}>Where you left off:</h5>
                 </Container>
                 <Container className="px-4">
-                  <TicketPreview
-                    number="1"
-                    title="Adding Tickets"
-                    desc="Tickets aren't adding properly to the system."
-                  />
+                  {lastTicket.length > 0 ? (
+                    <TicketPreview
+                      number={lastTicket[0].id}
+                      title={lastTicket[0].title}
+                      desc={lastTicket[0].desc}
+                      createdAt={lastTicket[0].createdAt
+                        .toDate()
+                        .toLocaleString()}
+                      lastModifiedAt={lastTicket[0].lastModifiedAt
+                        .toDate()
+                        .toLocaleString()}
+                      createdBy={lastTicket[0].ownerUsername}
+                    />
+                  ) : (
+                    <>{console.log(lastTicket)}</>
+                  )}
                 </Container>
               </Row>
             </Container>

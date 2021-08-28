@@ -54,7 +54,12 @@ function DashboardNav() {
       <Container>
         <Navbar.Brand href="/">Bug Tracker</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Button className="mx-1 bg-primary" onClick={handleSignOut}>
+        <Button
+          className="mx-1 bg-primary"
+          onClick={() => {
+            history.push("/create-a-ticket");
+          }}
+        >
           New Ticket
         </Button>
         <Navbar.Collapse id="basic-navbar-nav">

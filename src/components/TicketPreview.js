@@ -37,7 +37,13 @@ function TicketPreview(props) {
         </Col>
       </Row>
       <Row>
-        <p>{props.desc}</p>
+        <p style={{ fontSize: "1.15em" }}>{props.desc}</p>
+      </Row>
+      <Row>
+        <p style={{ fontSize: ".75em" }}>
+          Submitted by: <Link to="">{props.createdBy}</Link> | Created:{" "}
+          {props.createdAt} | Last Modified: {props.lastModifiedAt}
+        </p>
       </Row>
     </Container>
   );

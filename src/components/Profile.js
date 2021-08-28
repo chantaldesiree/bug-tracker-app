@@ -91,7 +91,7 @@ function Profile() {
                   <Col
                     xs={12}
                     lg={4}
-                    className="d-flex flex-column px-0 justify-content-center align-items-end"
+                    className="d-flex flex-column px-0 justify-content-center align-items-center"
                     style={{
                       color: "white",
                       paddingRight: "10px",
