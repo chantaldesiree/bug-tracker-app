@@ -1,11 +1,14 @@
-import { Form, Button, Card, Container } from "react-bootstrap";
+import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { db } from ".././firebase";
 
+import Nav from "./Nav";
+import TicketPreviewContainer from "./TicketPreviewContainer";
+import TicketPreview from "./TicketPreview";
+
 function Dashboard() {
-  const buttons = ["Home", "Issues", "Reports", "Members"];
   const { signout, currentUser } = useAuth();
   const history = useHistory();
   const [user, setUser] = useState();
@@ -59,109 +62,89 @@ function Dashboard() {
     }
   }, [user]);
 
-  async function handleSignOut(e) {
-    e.preventDefault();
-
-    try {
-      await signout();
-      history.push("/SignUp");
-    } catch {}
-  }
-
   return (
     <>
-      <div
-        className="d-flex"
-        style={{
-          backgroundColor: "#000550",
-          minHeight: "100vh",
-        }}
-      >
-        <div
-          className="flex-column"
+      {user ? (
+        <Container
           style={{
-            background: "linear-gradient(#0029e0, #00043f)",
-            color: "text-primary",
-            fontWeight: "bold",
-            minWidth: "200px",
+            backgroundColor: "#000550",
             minHeight: "100vh",
+            minWidth: "100%",
           }}
         >
-          <div
-            className="p-3"
-            style={{
-              backgroundColor: "#e8ecfd",
-              color: "#0029e0",
-              fontSize: "1.75em",
-            }}
-          >
-            Bug Tracker
-          </div>
-
-          {buttons.map((b) => {
-            return (
-              <div
-                className="mx-3 my-4"
-                style={{ color: "#e8ecfd", fontSize: "1.25em" }}
-                key={b}
-              >
-                {b}
-              </div>
-            );
-          })}
-          <Button className="mx-3 mt-2" variant="light">
-            + Add Issue
-          </Button>
-          <Button
-            className="mx-3 mt-2 sticky-bottom"
-            variant="light"
-            onClick={handleSignOut}
-          >
-            Sign Out
-          </Button>
-        </div>
-        <Container className="flex-row text-primary m-5 p-3">
-          {user ? (
-            <div>
-              <h1 style={{ color: "#e8ecfd" }}>
-                {user.firstName} {user.lastName}
-              </h1>
-              <h3 style={{ opacity: 0.95 }}>Username: {user.username}</h3>
-              <h5 className="pt-1 pb-1" style={{ opacity: 0.75 }}>
-                Role: {user.role}
-              </h5>
-              <div style={{ opacity: 0.7 }}>
-                <div>City: {user.city}</div>
-                <div>Province: {user.province}</div>
-                <div>Country: {user.country}</div>
-                <div>Phone Number: {user.phoneNumber}</div>
-              </div>
-              {users.length > 0 ? (
-                <>
-                  <div className="pt-5">
-                    <h3 style={{ color: "#e8ecfd" }}>All Users:</h3>
-
-                    {users.map((u) => {
-                      {
-                        return (
-                          <div key={u.id} className="pt-2 pb-2">
-                            <h4 style={{ opacity: 0.9 }}>{u.username}</h4>
-                            <div>Email: {u.id}</div>
-                          </div>
-                        );
-                      }
-                    })}
+          <Nav />
+          <Container className="d-flex flex-column justify-contents-center">
+            <Container
+              style={{
+                marginTop: "25px",
+              }}
+            >
+              <Row lg={4} sm={1}>
+                <Col
+                  xs={12}
+                  lg={4}
+                  className="d-flex flex-column justify-content-around align-items-center px-0"
+                  style={{
+                    minHeight: "300px",
+                    color: "white",
+                    paddingRight: "10px",
+                    marginBottom: "25px",
+                  }}
+                >
+                  <div>
+                    <h2>Welcome back,</h2>
+                    <h2>
+                      {user.firstName}
+                      {"."}
+                    </h2>
                   </div>
-                </>
-              ) : (
-                <></>
-              )}
-            </div>
-          ) : (
-            <></>
-          )}
+                </Col>
+                <Col
+                  className="px-1"
+                  xs={12}
+                  lg={8}
+                  style={{ color: "#000550" }}
+                >
+                  <Container
+                    className="d-flex justify-content-center align-items-center px-0"
+                    fluid
+                    style={{
+                      backgroundColor: "#e8ecfd",
+                      borderRadius: "5px",
+                      paddingTop: "8px",
+                      paddingBottom: "6px",
+                    }}
+                  >
+                    <h5>Since you've been away:</h5>
+                  </Container>
+                  <TicketPreviewContainer />
+                </Col>
+              </Row>
+              <Row>
+                <Container
+                  className="d-flex justify-content-center align-items-center bg-primary mt-3"
+                  style={{
+                    borderRadius: "5px",
+                    paddingTop: "9px",
+                    paddingBottom: "6px",
+                  }}
+                >
+                  <h5 style={{ color: "#e8ecfd" }}>Where you left off:</h5>
+                </Container>
+                <Container className="px-4">
+                  <TicketPreview
+                    number="1"
+                    title="Adding Tickets"
+                    desc="Tickets aren't adding properly to the system."
+                  />
+                </Container>
+              </Row>
+            </Container>
+          </Container>
         </Container>
-      </div>
+      ) : (
+        <></>
+      )}
     </>
   );
 }

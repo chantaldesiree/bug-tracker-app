@@ -8,8 +8,8 @@ function PremadeProfile() {
   const history = useHistory();
 
   const profileStyle = {
-    width: "80px",
-    height: "80px",
+    width: "75px",
+    height: "75px",
     color: "#e8ecfd",
     borderRadius: "50%",
     display: "flex",
@@ -17,9 +17,30 @@ function PremadeProfile() {
     alignItems: "center",
   };
 
-  function premadeProfileSignIn(email, password) {
+  function signInProfile(auth) {
+    let password = process.env.REACT_APP_LOGIN_PASSWORD;
+    let email = "";
+
+    switch (auth) {
+      case "Support":
+        email = process.env.REACT_APP_LOGIN_SUPPORT;
+        break;
+
+      case "Admin":
+        email = process.env.REACT_APP_LOGIN_ADMIN;
+        break;
+
+      case "SuperAdmin":
+        email = process.env.REACT_APP_LOGIN_SUPERADMIN;
+        break;
+
+      case "User":
+        email = process.env.REACT_APP_LOGIN_USER;
+        break;
+    }
+
     signin(email, password).then(() => {
-      if (currentUser !== undefined) {
+      if (currentUser) {
         history.push("/");
       } else {
         console.log(currentUser);
@@ -28,52 +49,40 @@ function PremadeProfile() {
   }
 
   return (
-    <div className="mt-5 text-center">
-      <h4 className="pb-3 text-light">Or use a premade profile:</h4>
+    <div className="mt-4 text-center">
+      <h4 className="pb-2 text-light">Or use a premade profile:</h4>
       <div className="d-flex justify-content-between align-items-center flex-wrap-wrap">
         <Button
           style={profileStyle}
           onClick={() => {
-            premadeProfileSignIn(
-              process.env.REACT_APP_LOGIN_USER,
-              process.env.REACT_APP_LOGIN_PASSWORD
-            );
+            signInProfile("User");
           }}
         >
-          <h6>User</h6>
+          <h6 className="pt-1">User</h6>
         </Button>
         <Button
           style={profileStyle}
           onClick={() => {
-            premadeProfileSignIn(
-              process.env.REACT_APP_LOGIN_SUPPORT,
-              process.env.REACT_APP_LOGIN_PASSWORD
-            );
+            signInProfile("Support");
           }}
         >
-          <h6>Support</h6>
+          <h6 className="pt-1">Support</h6>
         </Button>
         <Button
           style={profileStyle}
           onClick={() => {
-            premadeProfileSignIn(
-              process.env.REACT_APP_LOGIN_ADMIN,
-              process.env.REACT_APP_LOGIN_PASSWORD
-            );
+            signInProfile("Admin");
           }}
         >
-          <h6>Admin</h6>
+          <h6 className="pt-1">Admin</h6>
         </Button>
         <Button
           style={profileStyle}
           onClick={() => {
-            premadeProfileSignIn(
-              process.env.REACT_APP_LOGIN_SUPERADMIN,
-              process.env.REACT_APP_LOGIN_PASSWORD
-            );
+            signInProfile("SuperAdmin");
           }}
         >
-          <h6>Super Admin</h6>
+          <h6 className="pt-1">Super Admin</h6>
         </Button>
       </div>
     </div>

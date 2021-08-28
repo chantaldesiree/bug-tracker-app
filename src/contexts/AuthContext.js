@@ -8,7 +8,7 @@ export function useAuth() {
 }
 
 export function AuthProvider(children) {
-  const [currentUser, setCurrentUser] = useState();
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   function passwordreset(email) {
@@ -30,15 +30,11 @@ export function AuthProvider(children) {
   }
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged((user) => {
       setCurrentUser(user);
+      setLoading(false);
     });
-    return unsubscribe;
   }, []);
-
-  useEffect(() => {
-    setLoading(false);
-  }, [currentUser]);
 
   const value = {
     currentUser,
@@ -48,9 +44,13 @@ export function AuthProvider(children) {
     signup,
   };
 
+  if (loading) {
+    return <>Loading...</>;
+  }
+
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children.children}
+      {children.children}
     </AuthContext.Provider>
   );
 }

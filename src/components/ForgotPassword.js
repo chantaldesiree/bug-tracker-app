@@ -16,7 +16,7 @@ function ForgotPassword() {
     try {
       setError(``);
       await passwordreset(emailRef.current.value);
-      history.push("/SignIn");
+      history.push("/sign-in");
     } catch (error) {
       setError(error.message);
     }
@@ -28,7 +28,7 @@ function ForgotPassword() {
         className="d-flex align-items-center justify-content-center"
         style={{ minHeight: "100vh", backgroundColor: "#00043f" }}
       >
-        <div className="w-100" style={{ maxWidth: "400px" }}>
+        <div className="w-100 my-3" style={{ maxWidth: "350px" }}>
           <h1 className="text-center mb-4" style={{ color: "#1266F1" }}>
             Bug Tracker App
           </h1>
@@ -49,13 +49,13 @@ function ForgotPassword() {
           </Card>
           <div className="w-100 text-center mt-2 text-light">
             Remember you password?{" "}
-            <Link to="/SignIn">
+            <Link to="/sign-in">
               <span style={{ color: "#1266F1" }}>Sign in here.</span>
             </Link>
           </div>
           <div className="w-100 text-center mt-2 text-light">
             New?{" "}
-            <Link to="/SignUp">
+            <Link to="/sign-up">
               <span style={{ color: "#1266F1" }}>Sign up here.</span>
             </Link>
           </div>

@@ -134,7 +134,7 @@ function AccountCreation() {
       }
 
       console.log(error);
-      if (error === "") {
+      if (error === "" && username !== undefined) {
         db.collection("users")
           .doc(currentUser.email)
           .set({

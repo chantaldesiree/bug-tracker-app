@@ -2,7 +2,7 @@ import { Form, Button, Card, Alert } from "react-bootstrap";
 import { useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 import PremadeProfile from "./PremadeProfiles";
 
 function SignIn() {
@@ -31,9 +31,11 @@ function SignIn() {
             .get()
             .then((doc) => {
               if (doc.data().firstName === undefined) {
-                history.push("/AccountCreation");
+                history.push("/account-creation");
               } else {
-                history.push("/");
+                auth.onAuthStateChanged((currentUser) => {
+                  if (currentUser) history.push("/");
+                });
               }
             });
         }
@@ -49,7 +51,7 @@ function SignIn() {
         className="d-flex align-items-center justify-content-center"
         style={{ minHeight: "100vh", backgroundColor: "#00043f" }}
       >
-        <div className="w-100" style={{ maxWidth: "400px" }}>
+        <div className="w-100 my-3" style={{ maxWidth: "350px" }}>
           <h1 className="text-center mb-4" style={{ color: "#1266F1" }}>
             Bug Tracker App
           </h1>
@@ -80,7 +82,7 @@ function SignIn() {
           </div>
           <div className="w-100 text-center mt-2 text-light">
             New?{" "}
-            <Link to="/SignUp">
+            <Link to="/sign-up">
               <span style={{ color: "#1266F1" }}>Sign up here.</span>
             </Link>
           </div>

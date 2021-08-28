@@ -15,8 +15,11 @@ const fb = firebase.initializeApp({
   measurementId: process.env.REACT_APP_FIRESTORE_MEASUREMENT_ID,
 });
 
-export const auth = fb.auth();
+export const fbAuth = fb.auth();
+const auth = fb.auth();
 const db = fb.firestore();
 const currentTimestamp = firebase.firestore.Timestamp.now();
+const firebaseAuth = firebase.auth;
+const fbAuthSession = firebase.auth.Auth.Persistence.SESSION;
 
-export { db, currentTimestamp };
+export { db, currentTimestamp, auth };
