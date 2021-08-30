@@ -1,4 +1,5 @@
 import { Form, Button, Card, Alert, Dropdown } from "react-bootstrap";
+import FloatingLabel from "react-bootstrap/esm/FloatingLabel";
 import { useRef, useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useHistory } from "react-router-dom";
@@ -44,33 +45,27 @@ function AccountCreation() {
   }, [province, provinceISO, countryISO]);
 
   async function validUsername() {
-    let valid = true;
-
-    setUsername(
-      (
-        firstNameRef.current.value +
-        "-" +
-        lastNameRef.current.value
-      ).toLowerCase()
-    );
-
+    let uname = (
+      firstNameRef.current.value +
+      "-" +
+      lastNameRef.current.value
+    ).toLowerCase();
+    console.log(uname);
     await db
       .collection("users")
-      .where(
-        "username",
-        "==",
-        firstNameRef.current.value + "-" + lastNameRef.current.value
-      )
+      .where("username", ">=", uname)
+      .where("username", "<=", uname + "\uf8ff")
       .get()
       .then((querySnapshot) => {
-        if (querySnapshot.length > 0) {
-          valid = false;
+        if (querySnapshot.size > 0) {
+          setUsername((uname + (querySnapshot.size + 1)).toLowerCase());
+        } else {
+          setUsername(uname);
         }
       })
       .catch((error) => {
         console.log("Error getting documents: ", error);
       });
-    return valid;
   }
 
   /*   function validPostalCode(postalCode) {
@@ -99,11 +94,7 @@ function AccountCreation() {
     setError("");
 
     try {
-      var valid = await validUsername();
-
-      if (!valid) {
-        setError("Sorry, that username is already taken.");
-      }
+      validUsername();
 
       if (username < 6) {
         setError("Sorry, Your usename must be at least 6 characters long.");
@@ -149,7 +140,7 @@ function AccountCreation() {
             province: province,
             country: country,
             postalCode: postalCode,
-            phoneNumber: phoneNumberRef.current.value,
+            phoneNumber: phoneNumberRef.current.value.replace(/-/g, ""),
             joinDate: currentTimestamp,
             role: "User",
           })
@@ -182,32 +173,68 @@ function AccountCreation() {
                   <Form.Control type="username" ref={usernameRef} required />
                 </Form.Group> */}
                 <Form.Group id="firstName">
-                  <Form.Label>First Name</Form.Label>
-                  <Form.Control type="firstName" ref={firstNameRef} required />
+                  <FloatingLabel
+                    controlId="floatingFirstNameInput"
+                    label="First Name"
+                    className="text-primary my-3"
+                  >
+                    <Form.Control
+                      type="firstName"
+                      ref={firstNameRef}
+                      placeholder="firstName"
+                      required
+                    />
+                  </FloatingLabel>
                 </Form.Group>
                 <Form.Group id="lastName">
-                  <Form.Label>Last Name</Form.Label>
-                  <Form.Control type="lastName" ref={lastNameRef} required />
+                  <FloatingLabel
+                    controlId="floatingLastNameInput"
+                    label="Last Name"
+                    className="text-primary my-3"
+                  >
+                    <Form.Control
+                      type="lastName"
+                      ref={lastNameRef}
+                      placeholder="lastName"
+                      required
+                    />
+                  </FloatingLabel>
                 </Form.Group>
                 <Form.Group id="phoneNumber">
-                  <Form.Label>Phone Number</Form.Label>
-                  <Form.Control type="tel" ref={phoneNumberRef} required />
+                  <FloatingLabel
+                    controlId="floatingPhoneNumberInput"
+                    label="Phone Number"
+                    className="text-primary my-3"
+                  >
+                    <Form.Control
+                      type="tel"
+                      ref={phoneNumberRef}
+                      placeholder="phoneNumber"
+                      required
+                    />
+                  </FloatingLabel>
                 </Form.Group>
                 <Form.Group id="streetAddress">
-                  <Form.Label>Street Address</Form.Label>
-                  <Form.Control
-                    type="streetAddress"
-                    ref={streetAddressRef}
-                    required
-                  />
+                  <FloatingLabel
+                    controlId="floatingStreetAddressInput"
+                    label="Street Address"
+                    className="text-primary my-3"
+                  >
+                    <Form.Control
+                      type="streetAddress"
+                      ref={streetAddressRef}
+                      placeholder="streetAddress"
+                      required
+                    />
+                  </FloatingLabel>
                 </Form.Group>
                 <Form.Group id="country">
-                  <Form.Label>Country</Form.Label>
                   <Dropdown
                     onSelect={(e) => {
                       setCountryISO(e);
                       setCountry(Country.getCountryByCode(e).name);
                     }}
+                    style={{ marginBottom: "15px" }}
                   >
                     <Dropdown.Toggle
                       variant="primary"
@@ -237,8 +264,6 @@ function AccountCreation() {
                   </Dropdown>
                 </Form.Group>
                 <Form.Group id="province">
-                  <Form.Label>Province/State</Form.Label>
-
                   <Dropdown
                     onSelect={(e) => {
                       setProvinceISO(e);
@@ -246,6 +271,7 @@ function AccountCreation() {
                         State.getStateByCodeAndCountry(e, countryISO).name
                       );
                     }}
+                    style={{ marginBottom: "15px" }}
                   >
                     <Dropdown.Toggle
                       variant="primary"
@@ -291,8 +317,6 @@ function AccountCreation() {
                 </Form.Group>
 
                 <Form.Group id="city">
-                  <Form.Label>City</Form.Label>
-
                   <Dropdown
                     onSelect={(e) => {
                       setCity(e);
@@ -341,24 +365,34 @@ function AccountCreation() {
                 </Form.Group>
 
                 <Form.Group id="postalCode">
-                  <Form.Label>Postal/Zip Code</Form.Label>
-                  <Form.Control
-                    type="postalCode"
-                    ref={postalCodeRef}
-                    onChange={(e) => {
-                      let valid = postalCodes.validate(
-                        countryISO,
-                        e.target.value
-                      );
-                      console.log(valid);
-                      if (valid === true) {
-                        setPostalCode(e.target.value);
-                      }
-                    }}
-                    required
-                  />
+                  <FloatingLabel
+                    controlId="floatingPostalCodeInput"
+                    label="PostalCode"
+                    className="text-primary my-3"
+                  >
+                    <Form.Control
+                      type="postalCode"
+                      ref={postalCodeRef}
+                      placeholder="postalCode"
+                      onChange={(e) => {
+                        let valid = postalCodes.validate(
+                          countryISO,
+                          e.target.value
+                        );
+                        console.log(valid);
+                        if (valid === true) {
+                          setPostalCode(e.target.value);
+                        }
+                      }}
+                      required
+                    />
+                  </FloatingLabel>
                 </Form.Group>
-                <Button className="w-100 mt-4" type="submit">
+                <Button
+                  style={{ padding: "15px" }}
+                  className="w-100"
+                  type="submit"
+                >
                   Create Account
                 </Button>
               </Form>

@@ -1,4 +1,5 @@
 import { Form, Button, Card, Alert } from "react-bootstrap";
+import FloatingLabel from "react-bootstrap/esm/FloatingLabel";
 import { useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
@@ -54,22 +55,53 @@ function SignUp() {
               {error && <Alert variant="danger">{error}</Alert>}
               <Form onSubmit={handleSubmit}>
                 <Form.Group id="email">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control type="email" ref={emailRef} required />
+                  <FloatingLabel
+                    controlId="floatingEmailInput"
+                    label="Email"
+                    className="text-primary my-3"
+                  >
+                    <Form.Control
+                      type="email"
+                      ref={emailRef}
+                      placeholder="email@email.com"
+                      required
+                    />
+                  </FloatingLabel>
                 </Form.Group>
                 <Form.Group id="password">
-                  <Form.Label>Password</Form.Label>
-                  <Form.Control type="password" ref={passwordRef} required />
+                  <FloatingLabel
+                    controlId="floatingPasswordInput"
+                    label="Password"
+                    className="text-primary my-3"
+                  >
+                    <Form.Control
+                      type="password"
+                      ref={passwordRef}
+                      placeholder="password"
+                      required
+                    />
+                  </FloatingLabel>
                 </Form.Group>
                 <Form.Group id="passwordConfirm">
-                  <Form.Label>Password Confirmation</Form.Label>
-                  <Form.Control
-                    type="password"
-                    ref={passwordConfirmRef}
-                    required
-                  />
+                  <FloatingLabel
+                    controlId="floatingPasswordConfirmInput"
+                    label="Password Confirmation"
+                    className="text-primary my-3"
+                  >
+                    <Form.Control
+                      type="password"
+                      ref={passwordConfirmRef}
+                      placeholder="Password Confirmation"
+                      required
+                    />
+                  </FloatingLabel>
                 </Form.Group>
-                <Button disabled={loading} className="w-100 mt-4" type="submit">
+                <Button
+                  disabled={loading}
+                  className="w-100"
+                  style={{ padding: "15px" }}
+                  type="submit"
+                >
                   Sign Up
                 </Button>
               </Form>

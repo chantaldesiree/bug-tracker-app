@@ -1,4 +1,5 @@
 import { Form, Button, Card, Alert } from "react-bootstrap";
+import FloatingLabel from "react-bootstrap/esm/FloatingLabel";
 import { useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
@@ -34,14 +35,28 @@ function ForgotPassword() {
           </h1>
           <Card style={{ backgroundColor: "#e8ecfd", padding: 10 }}>
             <Card.Body>
-              <h2 className="text-center mb-4">Forgot Your Password?</h2>
+              <h2 className="text-center mb-4">Forgot Password?</h2>
               {error && <Alert variant="danger">{error}</Alert>}
               <Form onSubmit={handleSubmit}>
                 <Form.Group id="email">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control type="email" ref={emailRef} required />
+                  <FloatingLabel
+                    controlId="floatingEmailInput"
+                    label="Email"
+                    className="text-primary my-3"
+                  >
+                    <Form.Control
+                      type="email"
+                      ref={emailRef}
+                      placeholder="email@email.com"
+                      required
+                    />
+                  </FloatingLabel>
                 </Form.Group>
-                <Button className="w-100 mt-4" type="submit">
+                <Button
+                  className="w-100"
+                  style={{ padding: "15px" }}
+                  type="submit"
+                >
                   Reset Your Password
                 </Button>
               </Form>

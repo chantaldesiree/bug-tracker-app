@@ -20,6 +20,7 @@ const auth = fb.auth();
 const db = fb.firestore();
 const currentTimestamp = firebase.firestore.Timestamp.now();
 const firebaseAuth = firebase.auth;
+const fbService = firebase;
 const fbAuthSession = firebase.auth.Auth.Persistence.SESSION;
 
-export { db, currentTimestamp, auth };
+export { db, currentTimestamp, auth, fbService };

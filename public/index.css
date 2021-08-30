@@ -12,3 +12,7 @@
 .react-datepicker__year-text--in-range {
   background-color: "#1266F1" !important;
 }
+
+html {
+  background-color: "#000550";
+}

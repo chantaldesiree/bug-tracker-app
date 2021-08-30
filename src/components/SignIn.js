@@ -1,4 +1,5 @@
 import { Form, Button, Card, Alert } from "react-bootstrap";
+import FloatingLabel from "react-bootstrap/esm/FloatingLabel";
 import { useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
@@ -30,7 +31,7 @@ function SignIn() {
             .doc(emailRef.current.value)
             .get()
             .then((doc) => {
-              if (doc.data().firstName === undefined) {
+              if (!doc.data()) {
                 history.push("/account-creation");
               } else {
                 auth.onAuthStateChanged((currentUser) => {
@@ -61,14 +62,38 @@ function SignIn() {
               {error && <Alert variant="danger">{error}</Alert>}
               <Form onSubmit={handleSubmit}>
                 <Form.Group id="email">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control type="email" ref={emailRef} required />
+                  <FloatingLabel
+                    controlId="floatingEmailInput"
+                    label="Email"
+                    className="text-primary"
+                  >
+                    <Form.Control
+                      type="email"
+                      ref={emailRef}
+                      required
+                      placeholder="email@email.com"
+                    />
+                  </FloatingLabel>
                 </Form.Group>
-                <Form.Group id="password">
-                  <Form.Label>Password</Form.Label>
-                  <Form.Control type="password" ref={passwordRef} required />
+                <Form.Group id="password" className="my-3">
+                  <FloatingLabel
+                    controlId="floatingPasswordInput"
+                    label="Password"
+                    className="text-primary"
+                  >
+                    <Form.Control
+                      type="password"
+                      ref={passwordRef}
+                      placeholder="password"
+                      required
+                    />
+                  </FloatingLabel>
                 </Form.Group>
-                <Button className="w-100 mt-4" type="submit">
+                <Button
+                  className="w-100"
+                  style={{ padding: "15px" }}
+                  type="submit"
+                >
                   Sign In
                 </Button>
               </Form>
@@ -76,7 +101,7 @@ function SignIn() {
           </Card>
           <div className="w-100 text-center mt-2 text-light">
             Forgot your password?{" "}
-            <Link to="/ForgotPassword">
+            <Link to="/forgot-password">
               <span style={{ color: "#1266F1" }}>Reset it here.</span>
             </Link>
           </div>

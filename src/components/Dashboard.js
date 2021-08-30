@@ -129,7 +129,7 @@ function Dashboard() {
                       paddingBottom: "6px",
                     }}
                   >
-                    <h5>Since you've been away:</h5>
+                    <h5>Last Modified Tickets:</h5>
                   </Container>
                   <TicketPreviewContainer />
                 </Col>
@@ -143,7 +143,7 @@ function Dashboard() {
                     paddingBottom: "6px",
                   }}
                 >
-                  <h5 style={{ color: "#000550" }}>Where you left off:</h5>
+                  <h5 style={{ color: "#000550" }}>Your Last Ticket:</h5>
                 </Container>
                 <Container className="px-4">
                   {lastTicket.length > 0 ? (
