@@ -12,7 +12,8 @@ import FloatingLabel from "react-bootstrap/FloatingLabel";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { db } from ".././firebase";
+import { currentTimestamp, db } from ".././firebase";
+import firebase from "firebase";
 import UploadButton from "./UploadButton";
 
 import Nav from "./Nav";
@@ -22,6 +23,7 @@ function CreateTicket() {
   const history = useHistory();
   const [user, setUser] = useState();
   const [users, setUsers] = useState([]);
+  const [currentTicketCount, setCurrentTicketCount] = useState();
   const [error, setError] = useState();
 
   const [priorities, setPriorities] = useState([
@@ -37,7 +39,10 @@ function CreateTicket() {
     "Account Issue",
     "Other",
   ]);
+  const stepsRef = useRef();
   const titleRef = useRef();
+  const descRef = useRef();
+  const sourceURLRef = useRef();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -49,9 +54,29 @@ function CreateTicket() {
         db.collection("tickets")
           .doc()
           .set({
-            role: "User",
+            createdAt: currentTimestamp,
+            lastModifiedAt: currentTimestamp,
+            title: titleRef.current.value,
+            desc: descRef.current.value,
+            stepsToReproduce: stepsRef.current.value,
+            submittedBy: user.username,
+            submittedByUsername: currentUser.email,
+            ownedBy: currentUser.email,
+            ownedByUsername: user.username,
+            activity: [],
+            comments: [],
+            priority: priority,
+            category: categoryTitle,
+            id: currentTicketCount,
+            sourceURL: sourceURLRef.current.value,
+            status: "Open",
           })
           .then(() => {
+            db.collection("ticketCounter")
+              .doc("currentCount")
+              .update({
+                count: firebase.firestore.FieldValue.increment(1),
+              });
             history.push("/");
           });
       }
@@ -78,8 +103,28 @@ function CreateTicket() {
       });
   }
 
+  async function getCurrentTicketCount() {
+    await db
+      .collection("ticketCounter")
+      .doc("currentCount")
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          let d = doc.data();
+          setCurrentTicketCount(d.count + 1);
+        } else {
+          // doc.data() will be undefined in this case
+          console.log("No such document!");
+        }
+      })
+      .catch((error) => {
+        console.log("Error getting document:", error);
+      });
+  }
+
   useEffect(() => {
     getUser();
+    getCurrentTicketCount();
   }, []);
 
   function formatPhoneNumber(str) {
@@ -286,7 +331,7 @@ function CreateTicket() {
                               backgroundColor: "#020a40",
                             }}
                             placeholder="Leave a comment here"
-                            ref={titleRef}
+                            ref={descRef}
                             required
                             className="text-light"
                           />
@@ -305,7 +350,7 @@ function CreateTicket() {
                               backgroundColor: "#020a40",
                             }}
                             placeholder="Leave a comment here"
-                            ref={titleRef}
+                            ref={stepsRef}
                             required
                             className="text-light"
                           />
@@ -346,7 +391,7 @@ function CreateTicket() {
                         >
                           <Form.Control
                             type="title"
-                            ref={titleRef}
+                            ref={sourceURLRef}
                             required
                             className="text-light"
                             style={{ backgroundColor: "#020a40" }}

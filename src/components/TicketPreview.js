@@ -25,23 +25,28 @@ function TicketPreview(props) {
       }}
     >
       <Row className="d-flex justify-content-between">
-        <Col>
+        <Col xs={8} lg={9}>
           <h5>
             <Link to>
-              [Ticket {String(props.number).padStart(5, "0")}] {props.title}
+              [{props.status.toUpperCase()}] [Ticket{" "}
+              {String(props.number).padStart(5, "0")}] {props.title}
             </Link>
           </h5>
+          <p style={{ fontSize: "1.15em" }}>{props.desc}</p>
         </Col>
-        <Col className="text-primary" style={{ textAlign: "right" }}>
+        <Col
+          xs={4}
+          lg={3}
+          className="text-primary"
+          style={{ textAlign: "right" }}
+        >
           <Link to>...</Link>
+          <p>{props.category}</p>
         </Col>
-      </Row>
-      <Row>
-        <p style={{ fontSize: "1.15em" }}>{props.desc}</p>
       </Row>
       <Row>
         <p style={{ fontSize: ".75em" }}>
-          Submitted by: <Link to="">{props.createdBy}</Link> | Created:{" "}
+          Submitted by: <Link to="">{props.ownedByUsername}</Link> | Created:{" "}
           {props.createdAt} | Last Modified: {props.lastModifiedAt}
         </p>
       </Row>

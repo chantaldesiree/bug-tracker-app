@@ -12,7 +12,7 @@ function TicketPreviewContainer() {
   async function getTickets() {
     await db
       .collection("tickets")
-      .orderBy("id")
+      .orderBy("id", "desc")
       .limit(5)
       .get()
       .then((querySnapshot) => {
@@ -32,7 +32,7 @@ function TicketPreviewContainer() {
 
   return (
     <Container
-      className="d-flex flex-column-reverse"
+      className="d-flex flex-column"
       style={{
         paddingBottom: "5px",
         borderRadius: "5px",
@@ -47,7 +47,9 @@ function TicketPreviewContainer() {
               desc={t.desc}
               createdAt={t.createdAt.toDate().toLocaleString()}
               lastModifiedAt={t.lastModifiedAt.toDate().toLocaleString()}
-              createdBy={t.ownerUsername}
+              ownedByUsername={t.ownedByUsername}
+              category={t.category}
+              status={t.status}
             />
           );
         })}

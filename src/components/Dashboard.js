@@ -36,7 +36,7 @@ function Dashboard() {
   async function getLastTicket() {
     await db
       .collection("tickets")
-      .where("owner", "==", currentUser.email)
+      .where("ownedBy", "==", currentUser.email)
       .limit(1)
       .get()
       .then((querySnapshot) => {
@@ -157,7 +157,8 @@ function Dashboard() {
                       lastModifiedAt={lastTicket[0].lastModifiedAt
                         .toDate()
                         .toLocaleString()}
-                      createdBy={lastTicket[0].ownerUsername}
+                      ownedByUsername={lastTicket[0].ownedByUsername}
+                      status={lastTicket[0].status}
                     />
                   ) : (
                     <>{console.log(lastTicket)}</>
