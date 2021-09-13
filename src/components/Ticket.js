@@ -5,29 +5,22 @@ import { useState, useEffect } from "react";
 import { db } from ".././firebase";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import TicketPreviewContainer from "./TicketPreviewContainer";
 
-function OpenTickets() {
+function Ticket(props) {
   const { currentUser } = useAuth();
   const [ticket, setTicket] = useState();
   const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  async function getTickets() {
+  async function getTicket() {
+    console.log(props.match.params.id);
     await db
       .collection("tickets")
-      .orderBy("lastModifiedAt", "desc")
-      .orderBy("id", "desc")
-      .where("status", "==", "Open")
+      .where("id", "==", parseInt(props.match.params.id))
       .get()
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
-          let ticketData = doc.data();
-          setTickets((tickets) => [...tickets, ticketData]);
+          setTicket(doc.data());
         });
-      })
-      .then(() => {
-        setLoading(false);
       })
       .catch((error) => {
         console.log("Error getting documents: ", error);
@@ -35,26 +28,24 @@ function OpenTickets() {
   }
 
   useEffect(() => {
-    if (tickets.length == 0) {
-      getTickets();
-    }
+    getTicket();
   }, []);
 
   return (
     <>
-      {!loading ? (
-        <>
-          <Container
-            style={{
-              backgroundColor: "#000550",
-              minHeight: "100vh",
-              minWidth: "100%",
-              paddingTop: "15px",
-            }}
-          >
-            <Nav />
-            <Container className="d-flex flex-column justify-contents-center">
-              <Container className="mx-1">
+      <Container
+        style={{
+          backgroundColor: "#000550",
+          minHeight: "100vh",
+          minWidth: "100%",
+          paddingTop: "15px",
+        }}
+      >
+        <Nav />
+        <Container className="d-flex flex-column justify-contents-center">
+          <Container className="mx-1">
+            {ticket ? (
+              <>
                 <Row>
                   <Container
                     className="d-flex justify-content-center align-items-center bg-primary mt-3"
@@ -64,7 +55,10 @@ function OpenTickets() {
                       paddingBottom: "6px",
                     }}
                   >
-                    <h5 style={{ color: "#e8ecfd" }}>Open Tickets:</h5>
+                    <h5 style={{ color: "#e8ecfd" }}>
+                      [Ticket {String(ticket.id).padStart(5, "0")}]{" "}
+                      {ticket.title}
+                    </h5>
                   </Container>
                 </Row>
                 <Container
@@ -80,9 +74,10 @@ function OpenTickets() {
                 >
                   <Row style={{ color: "#e8ecfd" }}>
                     <Col>
-                      {tickets ? (
+                      {ticket ? (
                         <>
-                          <TicketPreviewContainer tickets={tickets} />
+                          <h1>{ticket.title}</h1>
+                          <h3>{ticket.desc}</h3>
                         </>
                       ) : (
                         <></>
@@ -90,16 +85,16 @@ function OpenTickets() {
                     </Col>
                   </Row>
                 </Container>
-              </Container>
-            </Container>
+              </>
+            ) : (
+              <></>
+            )}
           </Container>
-        </>
-      ) : (
-        <></>
-      )}
+        </Container>
+      </Container>
       )
     </>
   );
 }
 
-export default OpenTickets;
+export default Ticket;

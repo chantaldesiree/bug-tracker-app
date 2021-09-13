@@ -13,7 +13,9 @@ function Dashboard() {
   const history = useHistory();
   const [user, setUser] = useState();
   const [users, setUsers] = useState([]);
+  const [tickets, setTickets] = useState([]);
   const [lastTicket, setLastTicket] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   async function getUser() {
     await db
@@ -66,9 +68,30 @@ function Dashboard() {
       });
   }
 
+  async function getTickets() {
+    await db
+      .collection("tickets")
+      .orderBy("id", "desc")
+      .limit(5)
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          let ticketData = doc.data();
+          setTickets((tickets) => [...tickets, ticketData]);
+        });
+      })
+      .then(() => {
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.log("Error getting documents: ", error);
+      });
+  }
+
   useEffect(() => {
     getUser();
     if (lastTicket.length === 0) getLastTicket();
+    if (tickets.length === 0) getTickets();
   }, []);
 
   useEffect(() => {
@@ -83,7 +106,7 @@ function Dashboard() {
 
   return (
     <>
-      {user ? (
+      {user && !loading ? (
         <Container
           style={{
             backgroundColor: "#000550",
@@ -131,7 +154,7 @@ function Dashboard() {
                   >
                     <h5>Last Modified Tickets:</h5>
                   </Container>
-                  <TicketPreviewContainer />
+                  <TicketPreviewContainer tickets={tickets} />
                 </Col>
               </Row>
               <Row>
@@ -147,21 +170,9 @@ function Dashboard() {
                 </Container>
                 <Container className="px-4">
                   {lastTicket.length > 0 ? (
-                    <TicketPreview
-                      number={lastTicket[0].id}
-                      title={lastTicket[0].title}
-                      desc={lastTicket[0].desc}
-                      createdAt={lastTicket[0].createdAt
-                        .toDate()
-                        .toLocaleString()}
-                      lastModifiedAt={lastTicket[0].lastModifiedAt
-                        .toDate()
-                        .toLocaleString()}
-                      ownedByUsername={lastTicket[0].ownedByUsername}
-                      status={lastTicket[0].status}
-                    />
+                    <TicketPreviewContainer tickets={lastTicket} />
                   ) : (
-                    <>{console.log(lastTicket)}</>
+                    <></>
                   )}
                 </Container>
               </Row>
