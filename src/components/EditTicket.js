@@ -28,15 +28,16 @@ function EditTicket(props) {
   const [error, setError] = useState();
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
+  const [activity, setActivity] = useState([]);
 
   const [priorities, setPriorities] = useState([
     "Emergency",
     "High-Priority",
     "Low-Priority",
   ]);
-  const [priority, setPriority] = useState("Urgency");
+  const [priority, setPriority] = useState();
+  const [categoryTitle, setCategoryTitle] = useState();
 
-  const [categoryTitle, setCategoryTitle] = useState("Category");
   const [categories, setCategories] = useState([
     "Bug",
     "Account Issue",
@@ -48,8 +49,50 @@ function EditTicket(props) {
   const sourceURLRef = useRef();
 
   async function handleSubmit(e) {
+    setActivity(currentTicket[0].activity);
     e.preventDefault();
     setError("");
+
+    let activityArray = [];
+
+    if (currentTicket[0].priority !== priority) {
+      activityArray.push(
+        user.username + " changed the priority to " + priority
+      );
+    }
+
+    if (currentTicket[0].category !== categoryTitle) {
+      activityArray.push(
+        user.username + " changed the category to " + categoryTitle
+      );
+    }
+
+    if (currentTicket[0].title !== titleRef.current.value) {
+      activityArray.push(
+        user.username + " changed the title to " + titleRef.current.value
+      );
+    }
+
+    if (currentTicket[0].desc !== descRef.current.value) {
+      activityArray.push(
+        user.username + " changed the description to: " + descRef.current.value
+      );
+    }
+
+    if (currentTicket[0].stepsToReproduce !== stepsRef.current.value) {
+      activityArray.push(
+        user.username +
+          " changed the steps to reproduce to: " +
+          stepsRef.current.value
+      );
+    }
+
+    let newActivity = {
+      activityDate: currentTimestamp,
+      activityData: activityArray,
+    };
+
+    setActivity((activity) => [...activity, newActivity]);
 
     try {
       if (error === "") {
@@ -60,7 +103,7 @@ function EditTicket(props) {
             title: titleRef.current.value,
             desc: descRef.current.value,
             stepsToReproduce: stepsRef.current.value,
-            activity: [],
+            activity: activity,
             comments: [],
             priority: priority,
             category: categoryTitle,
@@ -114,18 +157,28 @@ function EditTicket(props) {
         });
       })
       .then(() => {})
-      .finally(() => {
-        setLoading(false);
-      })
+      .finally(() => {})
       .catch((error) => {
         console.log("Error getting documents: ", error);
       });
+  }
+
+  async function setData() {
+    setCategoryTitle(currentTicket[0].category);
+    setPriority(currentTicket[0].priority);
+    setLoading(false);
   }
 
   useEffect(() => {
     getUser();
     getCurrentTicket();
   }, []);
+
+  useEffect(() => {
+    if (currentTicket[0] !== undefined) {
+      setData();
+    }
+  }, [currentTicket]);
 
   return (
     <>
@@ -150,7 +203,10 @@ function EditTicket(props) {
                     paddingBottom: "6px",
                   }}
                 >
-                  <h5 style={{ color: "#e8ecfd" }}></h5>
+                  <h5 style={{ color: "#e8ecfd" }}>
+                    Editing Ticket{" "}
+                    {String(currentTicket[0].ticketID).padStart(5, "0")}
+                  </h5>
                 </Container>
               </Row>
               <Container
@@ -166,10 +222,6 @@ function EditTicket(props) {
               >
                 <Row>
                   <Col className="d-flex flex-column px-0 justify-content-center">
-                    <h2 className="text-center mb-4 text-light">
-                      Editing Ticket{" "}
-                      {String(currentTicket[0].ticketID).padStart(5, "0")}
-                    </h2>
                     {error && <Alert variant="danger">{error}</Alert>}
                     <Form onSubmit={handleSubmit}>
                       <Col
@@ -294,7 +346,9 @@ function EditTicket(props) {
                           controlId="floatingTitleInput"
                           label="Title"
                           className="text-primary my-2 w-100"
+                          style={{ fontSize: ".8em" }}
                         >
+                          Title
                           <Form.Control
                             type="text"
                             ref={titleRef}
@@ -310,7 +364,9 @@ function EditTicket(props) {
                           controlId="floatingInput"
                           label="Description"
                           className="text-primary my-2 w-100"
+                          style={{ fontSize: ".8em" }}
                         >
+                          Description
                           <Form.Control
                             as="textarea"
                             style={{
@@ -329,7 +385,9 @@ function EditTicket(props) {
                           controlId="floatingInput"
                           label="Steps to Recreate"
                           className="text-primary my-2 w-100"
+                          style={{ fontSize: ".8em" }}
                         >
+                          Steps to Reproduce
                           <Form.Control
                             as="textarea"
                             style={{
@@ -348,7 +406,9 @@ function EditTicket(props) {
                           controlId="floatingInput"
                           label="Expected Results"
                           className="text-primary my-2 w-100"
+                          style={{ fontSize: ".8em" }}
                         >
+                          Expected Results
                           <Form.Control
                             defaultValue={currentTicket[0].expectedResults}
                             className="text-light"
@@ -361,7 +421,9 @@ function EditTicket(props) {
                           controlId="floatingInput"
                           label="Actual Results"
                           className="text-primary my-2 w-100"
+                          style={{ fontSize: ".8em" }}
                         >
+                          Actual Results
                           <Form.Control
                             defaultValue={currentTicket[0].actualResults}
                             className="text-light"
@@ -374,8 +436,10 @@ function EditTicket(props) {
                         <Form.Label
                           controlId="floatingSourceURLInput"
                           label="Source URL"
-                          className="text-primary my-1  w-100"
+                          className="text-primary my-1 w-100"
+                          style={{ fontSize: ".8em" }}
                         >
+                          Source URL
                           <Form.Control
                             type="title"
                             ref={sourceURLRef}
@@ -383,12 +447,12 @@ function EditTicket(props) {
                             className="text-light"
                             style={{ backgroundColor: "#020a40" }}
                             defaultValue={currentTicket[0].sourceURL}
-                            className="my-2 text-light"
+                            className="text-light"
                           />
                         </Form.Label>
                       </Form.Group>
                       <Button
-                        style={{ padding: "15px", marginTop: "15px" }}
+                        style={{ padding: "15px", marginTop: "25px" }}
                         className="w-100"
                         type="submit"
                       >

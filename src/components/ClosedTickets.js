@@ -18,7 +18,7 @@ function ClosedTickets() {
       .collection("tickets")
       .where("status", "==", "Closed")
       .orderBy("lastModifiedAt", "desc")
-      .orderBy("id", "desc")
+      .orderBy("ticketID", "desc")
       .get()
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {

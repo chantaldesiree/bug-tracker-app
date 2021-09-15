@@ -11,14 +11,16 @@ import {
 } from "react-bootstrap";
 import Nav from "../components/Nav";
 import { useState, useEffect, useRef } from "react";
-import { db } from ".././firebase";
+import { db, currentTimestamp } from ".././firebase";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
 
 function Ticket(props) {
   const { currentUser } = useAuth();
+  const [user, setUser] = useState();
   const [loading, setLoading] = useState(true);
   const [ticket, setTicket] = useState();
+  const [activity, setActivity] = useState([]);
   const history = useHistory();
 
   const [badgeType, setBadgeType] = useState();
@@ -37,14 +39,19 @@ function Ticket(props) {
       .get()
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
-          console.log(doc.data());
-          setTicket(doc.data());
+          let ticketData = doc.data();
+          ticketData.id = doc.id;
+
+          setTicket(ticketData);
         });
       })
       .then(() => {
-        setBadges();
+        setEditURL("/ticket/edit/" + props.match.params.id);
       })
       .then(() => {
+        setActivity(ticket.activity);
+      })
+      .finally(() => {
         setLoading(false);
       })
       .catch((error) => {
@@ -54,8 +61,6 @@ function Ticket(props) {
 
   function setBadges() {
     if (ticket) {
-      setEditURL("/ticket/edit/" + ticket.id);
-
       switch (ticket.category) {
         case "Bug":
           setBadgeType("primary");
@@ -103,13 +108,68 @@ function Ticket(props) {
       });
   }
 
+  function assignTicket() {
+    if (ticket.ownedBy !== currentUser.email) {
+      let assignMessage = "Assigned ticket to " + user.username;
+
+      let newActivity = {
+        activityDate: currentTimestamp,
+        activityData: [assignMessage],
+      };
+
+      setActivity((activity) => [...activity, newActivity]);
+    }
+  }
+
+  function assignTicketToDB() {
+    if (ticket) {
+      db.collection("tickets")
+        .doc(ticket.id)
+        .update({
+          ownedBy: currentUser.email,
+          ownedByUsername: user.username,
+          activity: activity,
+        })
+        .then(() => {
+          history.push("/");
+        });
+    }
+  }
+
+  async function getUser() {
+    await db
+      .collection("users")
+      .doc(currentUser.email)
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          setUser(doc.data());
+        } else {
+          // doc.data() will be undefined in this case
+          console.log("No such document!");
+        }
+      })
+      .catch((error) => {
+        console.log("Error getting document:", error);
+      });
+  }
+
   useEffect(() => {
     getTicket();
+    getUser();
   }, []);
+
+  useEffect(() => {
+    setBadges();
+  }, [ticket]);
+
+  useEffect(() => {
+    assignTicketToDB();
+  }, [activity]);
 
   return (
     <>
-      {!loading ? (
+      {!loading && user ? (
         <>
           <Container
             style={{
@@ -154,7 +214,7 @@ function Ticket(props) {
                           {ticket ? (
                             <>
                               <Container>
-                                <Row>
+                                <Row className="d-flex justify-content-between">
                                   <Col xs={9}>
                                     <h2>
                                       {ticket.title}{" "}
@@ -174,43 +234,6 @@ function Ticket(props) {
                                       </Badge>
                                     </h2>
                                   </Col>
-                                  <Col
-                                    xs={5}
-                                    sm={3}
-                                    lg={2}
-                                    className="text-primary"
-                                    style={{
-                                      textAlign: "right",
-                                      display: "flex",
-                                      flexDirection: "flex-start",
-                                    }}
-                                  >
-                                    {currentUser.email === ticket.ownedBy ? (
-                                      <>
-                                        <Dropdown>
-                                          <Dropdown.Toggle
-                                            variant="primary"
-                                            id="dropdown-basic"
-                                          >
-                                            Options
-                                          </Dropdown.Toggle>
-
-                                          <Dropdown.Menu>
-                                            <Dropdown.Item href={editURL}>
-                                              Edit Ticket
-                                            </Dropdown.Item>
-                                            <Dropdown.Item
-                                              onClick={deleteTicket}
-                                            >
-                                              Delete Ticket
-                                            </Dropdown.Item>
-                                          </Dropdown.Menu>
-                                        </Dropdown>
-                                      </>
-                                    ) : (
-                                      <></>
-                                    )}
-                                  </Col>
                                 </Row>
 
                                 <p style={{ fontSize: 11 }}>
@@ -227,121 +250,199 @@ function Ticket(props) {
                                   <Link to="">{ticket.ownedByUsername}</Link>
                                 </p>
                                 <Row>
-                                  {ticket.desc ? (
-                                    <>
-                                      <div class="py-2">
-                                        <h5>Description:</h5>
-                                        <p>{ticket.desc}</p>
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <></>
-                                  )}
+                                  <Col lg={9}>
+                                    <Row>
+                                      {ticket.desc ? (
+                                        <>
+                                          <div className="py-2">
+                                            <h5>Description:</h5>
+                                            <p>{ticket.desc}</p>
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <></>
+                                      )}
 
-                                  {ticket.stepsToReproduce ? (
-                                    <>
-                                      <div class="py-2">
-                                        <h5>Steps to Reproduce:</h5>
-                                        <p>{ticket.stepsToReproduce}</p>
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <></>
-                                  )}
+                                      {ticket.stepsToReproduce ? (
+                                        <>
+                                          <div className="py-2">
+                                            <h5>Steps to Reproduce:</h5>
+                                            <p>{ticket.stepsToReproduce}</p>
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <></>
+                                      )}
 
-                                  {ticket.expectedResults ? (
-                                    <>
-                                      <div class="py-2">
-                                        <h5>Expected Results:</h5>
-                                        <p>{ticket.expectedResults}</p>
+                                      {ticket.expectedResults ? (
+                                        <>
+                                          <div className="py-2">
+                                            <h5>Expected Results:</h5>
+                                            <p>{ticket.expectedResults}</p>
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <></>
+                                      )}
+                                      {ticket.actualResults ? (
+                                        <>
+                                          <div className="py-2">
+                                            <h5>Actual Results:</h5>
+                                            <p>{ticket.actualResults}</p>
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <></>
+                                      )}
+                                      <div className="py-2">
+                                        <h5>Source URL:</h5>
+                                        <Link to={ticket.sourceURL}>
+                                          {ticket.sourceURL}
+                                        </Link>
                                       </div>
-                                    </>
-                                  ) : (
-                                    <></>
-                                  )}
-                                  {ticket.actualResults ? (
-                                    <>
-                                      <div class="py-2">
-                                        <h5>Actual Results:</h5>
-                                        <p>{ticket.actualResults}</p>
+                                    </Row>
+                                    <Row>
+                                      <div className="py-2">
+                                        <h5>Activity:</h5>
+                                        {ticket.activity ? (
+                                          ticket.activity
+                                            .slice(0)
+                                            .reverse()
+                                            .map((t) => {
+                                              return (
+                                                <>
+                                                  <p key={t.activityDate}>
+                                                    {t.activityDate
+                                                      .toDate()
+                                                      .toLocaleString()}
+                                                  </p>{" "}
+                                                  <Container
+                                                    style={{
+                                                      fontSize: ".85em",
+                                                    }}
+                                                  >
+                                                    {t.activityData.map(
+                                                      (data) => {
+                                                        return (
+                                                          <p key={data}>
+                                                            {data}
+                                                          </p>
+                                                        );
+                                                      }
+                                                    )}
+                                                  </Container>
+                                                </>
+                                              );
+                                            })
+                                        ) : (
+                                          <>No activity.</>
+                                        )}
                                       </div>
-                                    </>
-                                  ) : (
-                                    <></>
-                                  )}
-                                  <div class="py-2">
-                                    <h5>Source URL:</h5>
-                                    <Link to={ticket.sourceURL}>
-                                      {ticket.sourceURL}
-                                    </Link>
-                                  </div>
-                                </Row>
+                                    </Row>
+                                    <Row>
+                                      <div className="py-2">
+                                        <h5>Comments:</h5>
+                                        {ticket.comments ? (
+                                          <>
+                                            <p>{ticket.comments}</p>{" "}
+                                          </>
+                                        ) : (
+                                          <>No comments.</>
+                                        )}
+                                      </div>
 
-                                <Row>
-                                  <Col>
-                                    <div class="py-2">
-                                      <h5>Priority:</h5>
-                                      <p>{ticket.priority}</p>
-                                    </div>
+                                      <Form>
+                                        <Form.Group id="title">
+                                          <FloatingLabel
+                                            controlId="floatingInput"
+                                            label="Leave a comment"
+                                            className="text-primary my-3"
+                                          >
+                                            <Form.Control
+                                              as="textarea"
+                                              style={{
+                                                height: "175px",
+                                                backgroundColor: "#020a40",
+                                              }}
+                                              placeholder="Leave a comment here"
+                                              ref={commentRef}
+                                              required
+                                              className="text-light"
+                                            />
+                                          </FloatingLabel>
+                                        </Form.Group>
+                                      </Form>
+                                    </Row>
                                   </Col>
-                                  <Col>
-                                    <div class="py-2">
-                                      <h5>Category:</h5>
-                                      <p>{ticket.category}</p>
-                                    </div>
-                                  </Col>
-                                  <Col>
-                                    <div class="py-2">
-                                      <h5>Status:</h5>
-                                      <p>{ticket.status}</p>
-                                    </div>
-                                  </Col>
-                                </Row>
-                                <Row>
-                                  <div class="py-2">
-                                    <h5>Activity:</h5>
-                                    {ticket.activity ? (
-                                      <>
-                                        <p>{ticket.activity}</p>{" "}
-                                      </>
-                                    ) : (
-                                      <>No activity.</>
-                                    )}
-                                  </div>
-                                </Row>
-                                <Row>
-                                  <div class="py-2">
-                                    <h5>Comments:</h5>
-                                    {ticket.comments ? (
-                                      <>
-                                        <p>{ticket.comments}</p>{" "}
-                                      </>
-                                    ) : (
-                                      <>No comments.</>
-                                    )}
-                                  </div>
+                                  <Col lg={3}>
+                                    <Row>
+                                      <div className="py-2">
+                                        <h5>Priority:</h5>
+                                        <p>{ticket.priority}</p>
+                                      </div>
 
-                                  <Form>
-                                    <Form.Group id="title">
-                                      <FloatingLabel
-                                        controlId="floatingInput"
-                                        label="Leave a comment"
-                                        className="text-primary my-3"
-                                      >
-                                        <Form.Control
-                                          as="textarea"
-                                          style={{
-                                            height: "175px",
-                                            backgroundColor: "#020a40",
-                                          }}
-                                          placeholder="Leave a comment here"
-                                          ref={commentRef}
-                                          required
-                                          className="text-light"
-                                        />
-                                      </FloatingLabel>
-                                    </Form.Group>
-                                  </Form>
+                                      <div className="py-2">
+                                        <h5>Category:</h5>
+                                        <p>{ticket.category}</p>
+                                      </div>
+
+                                      <div className="py-2">
+                                        <h5>Status:</h5>
+                                        <p>{ticket.status}</p>
+                                      </div>
+                                      <div className="py-2">
+                                        <h5>Owner:</h5>
+                                        <p>{ticket.ownedByUsername}</p>
+                                      </div>
+                                    </Row>
+                                    <Row>
+                                      <div className="py-2">
+                                        <Dropdown>
+                                          <Dropdown.Toggle
+                                            variant="primary"
+                                            id="dropdown-basic"
+                                          >
+                                            Assign Ticket
+                                          </Dropdown.Toggle>
+
+                                          <Dropdown.Menu>
+                                            <Dropdown.Item
+                                              onClick={assignTicket}
+                                            >
+                                              {user.username}
+                                            </Dropdown.Item>
+                                          </Dropdown.Menu>
+                                        </Dropdown>
+                                      </div>
+                                    </Row>
+                                    <Row>
+                                      {currentUser.email === ticket.ownedBy ? (
+                                        <>
+                                          <Dropdown>
+                                            <Dropdown.Toggle
+                                              variant="primary"
+                                              id="dropdown-basic"
+                                            >
+                                              Options
+                                            </Dropdown.Toggle>
+
+                                            <Dropdown.Menu>
+                                              <Dropdown.Item href={editURL}>
+                                                Edit Ticket
+                                              </Dropdown.Item>
+                                              <Dropdown.Item
+                                                onClick={deleteTicket}
+                                              >
+                                                Delete Ticket
+                                              </Dropdown.Item>
+                                            </Dropdown.Menu>
+                                          </Dropdown>
+                                        </>
+                                      ) : (
+                                        <></>
+                                      )}
+                                    </Row>
+                                  </Col>
                                 </Row>
                               </Container>
                             </>

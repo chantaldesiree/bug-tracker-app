@@ -17,7 +17,7 @@ function OpenTickets() {
     await db
       .collection("tickets")
       .orderBy("lastModifiedAt", "desc")
-      .orderBy("id", "desc")
+      .orderBy("ticketID", "desc")
       .where("status", "==", "Open")
       .get()
       .then((querySnapshot) => {
