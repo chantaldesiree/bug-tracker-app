@@ -29,9 +29,10 @@ function CreateTicket() {
   const [priorities, setPriorities] = useState([
     "Emergency",
     "High-Priority",
+    "Medium-Priority",
     "Low-Priority",
   ]);
-  const [priority, setPriority] = useState("Urgency");
+  const [priority, setPriority] = useState("Priority");
 
   const [categoryTitle, setCategoryTitle] = useState("Category");
   const [categories, setCategories] = useState([
@@ -42,14 +43,27 @@ function CreateTicket() {
   const stepsRef = useRef();
   const titleRef = useRef();
   const descRef = useRef();
+  const expectedRef = useRef();
+  const actualRef = useRef();
   const sourceURLRef = useRef();
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
 
+    if (categoryTitle === "Category") {
+      setError("Please select a category.");
+    }
+
+    if (priority === "Priority") {
+      setError("Please select a priority.");
+    }
+
     try {
-      console.log(error);
+      console.log("Error: " + error);
+      console.log("Category: " + categoryTitle);
+      console.log("Priority: " + priority);
+
       if (error === "") {
         db.collection("tickets")
           .doc()
@@ -69,6 +83,8 @@ function CreateTicket() {
             category: categoryTitle,
             id: currentTicketCount,
             sourceURL: sourceURLRef.current.value,
+            expectedResults: expectedRef.current.value,
+            actualResults: actualRef.current.value,
             status: "Open",
           })
           .then(() => {
@@ -126,20 +142,6 @@ function CreateTicket() {
     getUser();
     getCurrentTicketCount();
   }, []);
-
-  function formatPhoneNumber(str) {
-    //Filter only numbers from the input
-    let cleaned = ("" + str).replace(/\D/g, "");
-
-    //Check if the input is of correct length
-    let match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
-
-    if (match) {
-      return "(" + match[1] + ") " + match[2] + "-" + match[3];
-    }
-
-    return null;
-  }
 
   return (
     <>
@@ -203,53 +205,6 @@ function CreateTicket() {
                         >
                           <Dropdown
                             onSelect={(e) => {
-                              setPriority(e);
-                            }}
-                            style={{ display: "inline" }}
-                          >
-                            <Dropdown.Toggle
-                              variant="primary"
-                              id="dropdown-basic-button"
-                              style={{ padding: "15px" }}
-                            >
-                              {priority}
-                            </Dropdown.Toggle>
-
-                            {priority ? (
-                              <Dropdown.Menu
-                                style={{
-                                  maxHeight: "500px",
-                                  overflowX: "hidden",
-                                }}
-                              >
-                                {priorities.map((ci) => {
-                                  return (
-                                    <Dropdown.Item
-                                      href=""
-                                      style={{ padding: 10 }}
-                                      eventKey={ci}
-                                    >
-                                      {ci}
-                                    </Dropdown.Item>
-                                  );
-                                })}
-                              </Dropdown.Menu>
-                            ) : (
-                              <Dropdown.Menu
-                                style={{
-                                  maxHeight: "500px",
-                                  overflowX: "hidden",
-                                  disabled: "true",
-                                }}
-                              >
-                                <Dropdown.Item href="" style={{ padding: 10 }}>
-                                  {priority}
-                                </Dropdown.Item>
-                              </Dropdown.Menu>
-                            )}
-                          </Dropdown>
-                          <Dropdown
-                            onSelect={(e) => {
                               setCategoryTitle(e);
                             }}
                             style={{
@@ -295,6 +250,54 @@ function CreateTicket() {
                               >
                                 <Dropdown.Item href="" style={{ padding: 10 }}>
                                   {categories}
+                                </Dropdown.Item>
+                              </Dropdown.Menu>
+                            )}
+                          </Dropdown>
+
+                          <Dropdown
+                            onSelect={(e) => {
+                              setPriority(e);
+                            }}
+                            style={{ display: "inline", marginLeft: "15px" }}
+                          >
+                            <Dropdown.Toggle
+                              variant="primary"
+                              id="dropdown-basic-button"
+                              style={{ padding: "15px" }}
+                            >
+                              {priority}
+                            </Dropdown.Toggle>
+
+                            {priority ? (
+                              <Dropdown.Menu
+                                style={{
+                                  maxHeight: "500px",
+                                  overflowX: "hidden",
+                                }}
+                              >
+                                {priorities.map((ci) => {
+                                  return (
+                                    <Dropdown.Item
+                                      href=""
+                                      style={{ padding: 10 }}
+                                      eventKey={ci}
+                                    >
+                                      {ci}
+                                    </Dropdown.Item>
+                                  );
+                                })}
+                              </Dropdown.Menu>
+                            ) : (
+                              <Dropdown.Menu
+                                style={{
+                                  maxHeight: "500px",
+                                  overflowX: "hidden",
+                                  disabled: "true",
+                                }}
+                              >
+                                <Dropdown.Item href="" style={{ padding: 10 }}>
+                                  {priority}
                                 </Dropdown.Item>
                               </Dropdown.Menu>
                             )}
@@ -365,6 +368,7 @@ function CreateTicket() {
                           <Form.Control
                             placeholder="Leave a comment here"
                             className="text-light"
+                            ref={expectedRef}
                             style={{ backgroundColor: "#020a40" }}
                           />
                         </FloatingLabel>
@@ -378,6 +382,7 @@ function CreateTicket() {
                           <Form.Control
                             placeholder="Leave a comment here"
                             className="text-light"
+                            ref={actualRef}
                             style={{ backgroundColor: "#020a40" }}
                           />
                         </FloatingLabel>

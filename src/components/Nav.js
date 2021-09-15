@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { db } from ".././firebase";
 
 function DashboardNav() {
-  const buttons = ["Issues", "Reports", "Members"];
+  const buttons = ["Reports", "Members"];
   const tickets = ["My Tickets", "Open Tickets", "Closed Tickets"];
   const [user, setUser] = useState();
 

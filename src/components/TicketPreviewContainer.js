@@ -24,8 +24,8 @@ function TicketPreviewContainer(props) {
         tickets.map((t) => {
           return (
             <TicketPreview
-              key={t.id}
-              number={t.id}
+              key={t.ticketID}
+              ticketID={t.ticketID}
               title={t.title}
               desc={t.desc}
               createdAt={t.createdAt.toDate().toLocaleString()}

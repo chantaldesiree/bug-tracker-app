@@ -39,6 +39,7 @@ function Dashboard() {
     await db
       .collection("tickets")
       .where("ownedBy", "==", currentUser.email)
+      .orderBy("lastModifiedAt", "desc")
       .limit(1)
       .get()
       .then((querySnapshot) => {
@@ -71,7 +72,7 @@ function Dashboard() {
   async function getTickets() {
     await db
       .collection("tickets")
-      .orderBy("id", "desc")
+      .orderBy("lastModifiedAt", "desc")
       .limit(5)
       .get()
       .then((querySnapshot) => {

@@ -64,27 +64,15 @@ function MyTickets() {
                     <h5 style={{ color: "#e8ecfd" }}>My Tickets:</h5>
                   </Container>
                 </Row>
-                <Container
-                  className="mx-0"
-                  style={{
-                    backgroundColor: "#020a40",
-                    padding: "12px",
-                    borderRadius: "5px",
-                    color: "#d3d9ff",
-                    marginTop: "10px",
-                    marginBottom: "10px",
-                  }}
-                >
-                  <Row style={{ color: "#e8ecfd" }}>
-                    <Col>
-                      <TicketPreviewContainer tickets={tickets} />
-                    </Col>
-                  </Row>
-                </Container>
+
+                <Row style={{ color: "#e8ecfd" }}>
+                  <Col>
+                    <TicketPreviewContainer tickets={tickets} />
+                  </Col>
+                </Row>
               </Container>
             </Container>
           </Container>
-          )
         </>
       ) : (
         <></>

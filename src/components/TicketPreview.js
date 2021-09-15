@@ -10,52 +10,62 @@ import {
   Badge,
 } from "react-bootstrap";
 import { db } from "../firebase";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useHistory } from "react-router-dom";
+import { withRouter } from "react-router";
 
 function TicketPreview(props) {
   const { signout, currentUser } = useAuth();
-  let url = "/ticket/" + props.number;
-  let editUrl = "/ticket/" + props.number + "/edit/";
-  let badgeType = "";
-  let priorityType = "";
-  let textColor = "";
+  let url = "/ticket/" + props.ticketID;
+  const [editURL, setEditURL] = useState();
+  const [badgeType, setBadgeType] = useState();
+  const [priorityType, setPriorityType] = useState();
+  const [bTextColor, setBTextColor] = useState();
+  const [pTextColor, setPTextColor] = useState();
 
-  switch (props.category) {
-    case "Bug":
-      badgeType = "primary";
-      textColor = "light";
-      break;
-    case "Account Issue":
-      badgeType = "dark";
-      textColor = "light";
-      break;
-    default:
-      badgeType = "secondary";
-      textColor = "light";
-  }
+  const history = useHistory();
 
-  switch (props.priority) {
-    case "Emergency":
-      priorityType = "danger";
-      textColor = "light";
-      break;
-    case "High-Priority":
-      priorityType = "warning";
-      textColor = "dark";
-      break;
-    case "Medium-Priority":
-      priorityType = "info";
-      textColor = "dark";
-      break;
-    default:
-      priorityType = "success";
-      textColor = "light";
+  function setBadges() {
+    if (props) {
+      setEditURL("/ticket/edit/" + props.ticketID);
+
+      switch (props.category) {
+        case "Bug":
+          setBadgeType("primary");
+          setBTextColor("light");
+          break;
+        case "Account Issue":
+          setBadgeType("dark");
+          setBTextColor("light");
+          break;
+        default:
+          setBadgeType("secondary");
+          setBTextColor("light");
+      }
+
+      switch (props.priority) {
+        case "Emergency":
+          setPriorityType("danger");
+          setPTextColor("light");
+          break;
+        case "High-Priority":
+          setPriorityType("warning");
+          setPTextColor("dark");
+          break;
+        case "Medium-Priority":
+          setPriorityType("info");
+          setPTextColor("dark");
+          break;
+        default:
+          setPriorityType("success");
+          setPTextColor("light");
+      }
+    }
   }
 
   function deleteTicket() {
-    var ticket = db.collection("tickets").where("id", "==", props.number);
+    var ticket = db.collection("tickets").where("id", "==", props.ticketID);
     ticket
       .get()
       .then(function (querySnapshot) {
@@ -64,9 +74,13 @@ function TicketPreview(props) {
         });
       })
       .then(() => {
-        return props.number;
+        history.push("/");
       });
   }
+
+  useEffect(() => {
+    setBadges();
+  }, []);
 
   return (
     <Container
@@ -80,23 +94,26 @@ function TicketPreview(props) {
       }}
     >
       <Row className="d-flex justify-content-between">
-        <Col xs={9}>
+        <Col xs={8} xl={10}>
           <h5>
             <Link to={url}>
               [{props.status.toUpperCase()}] [Ticket{" "}
-              {String(props.number).padStart(5, "0")}] {props.title}
+              {String(props.ticketID).padStart(5, "0")}] {props.title}
             </Link>{" "}
-            <Badge pill bg={priorityType} text={textColor}>
+            <Badge pill bg={priorityType} text={pTextColor}>
               {props.priority}
             </Badge>{" "}
-            <Badge pill bg={badgeType} text={textColor}>
+            <Badge pill bg={badgeType} text={bTextColor}>
               {props.category}
             </Badge>
           </h5>
-
-          <p style={{ fontSize: "1.15em" }}>{props.desc}</p>
         </Col>
-        <Col xs={3} className="text-primary" style={{ textAlign: "right" }}>
+        <Col
+          xs={4}
+          xl={2}
+          className="text-primary"
+          style={{ textAlign: "right" }}
+        >
           <Dropdown>
             <Dropdown.Toggle variant="primary" id="dropdown-basic">
               Options
@@ -106,7 +123,7 @@ function TicketPreview(props) {
               <Dropdown.Item href={url}>View Ticket</Dropdown.Item>
               {currentUser.email === props.ownedBy ? (
                 <>
-                  <Dropdown.Item href={editUrl}>Edit Ticket</Dropdown.Item>
+                  <Dropdown.Item href={editURL}>Edit Ticket</Dropdown.Item>
                   <Dropdown.Item onClick={deleteTicket}>
                     Delete Ticket
                   </Dropdown.Item>
@@ -119,13 +136,19 @@ function TicketPreview(props) {
         </Col>
       </Row>
       <Row>
+        <Col xs={12} sm={10}>
+          <p style={{ fontSize: "1.15em" }}>{props.desc}</p>
+        </Col>
+        <Col xs={0} sm={2}></Col>
+      </Row>
+      <Row>
         <p style={{ fontSize: ".75em" }}>
           Submitted by: <Link to="">{props.ownedByUsername}</Link> | Created:{" "}
-          {props.createdAt} | Last Modified: {props.lastModifiedAt}
+          {props.createdAt} | Last Modified: {props.lastModifiedAt}| Last
+          Modified by: <Link to="">{props.ownedByUsername}</Link>
         </p>
       </Row>
     </Container>
   );
 }
-
-export default TicketPreview;
+export default withRouter(TicketPreview);

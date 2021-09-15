@@ -12,6 +12,7 @@ import ForgotPassword from "./components/ForgotPassword";
 import Members from "./components/Members";
 import Profile from "./components/Profile";
 import CreateTicket from "./components/CreateTicket";
+import EditTicket from "./components/EditTicket";
 import MyTickets from "./components/MyTickets";
 import OpenTickets from "./components/OpenTickets";
 import ClosedTickets from "./components/ClosedTickets";
@@ -28,7 +29,7 @@ export default function App() {
               path="/account-creation"
               component={AccountCreation}
             />
-
+            <PrivateRoute path="/ticket/edit/:id" component={EditTicket} />
             <PrivateRoute path="/ticket/:id" component={Ticket} />
             <PrivateRoute path="/my-tickets" component={MyTickets} />
             <PrivateRoute path="/open-tickets" component={OpenTickets} />
