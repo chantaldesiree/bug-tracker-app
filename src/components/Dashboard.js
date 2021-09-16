@@ -48,6 +48,7 @@ function Dashboard() {
           setLastTicket((lastTicket) => [...lastTicket, ticketData]);
         });
       })
+      .then(() => {})
       .catch((error) => {
         console.log("Error getting documents: ", error);
       });
@@ -155,7 +156,7 @@ function Dashboard() {
                   >
                     <h5>Last Modified Tickets:</h5>
                   </Container>
-                  <TicketPreviewContainer tickets={tickets} />
+                  <TicketPreviewContainer tickets={tickets} user={user} />
                 </Col>
               </Row>
               <Row>
@@ -170,8 +171,8 @@ function Dashboard() {
                   <h5 style={{ color: "#000550" }}>Your Last Ticket:</h5>
                 </Container>
                 <Container className="px-4">
-                  {lastTicket.length > 0 ? (
-                    <TicketPreviewContainer tickets={lastTicket} />
+                  {lastTicket ? (
+                    <TicketPreviewContainer tickets={lastTicket} user={user} />
                   ) : (
                     <></>
                   )}

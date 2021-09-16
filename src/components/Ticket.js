@@ -17,10 +17,13 @@ import { Link, useHistory } from "react-router-dom";
 
 function Ticket(props) {
   const { currentUser } = useAuth();
+  const [error, setError] = useState();
   const [user, setUser] = useState();
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [ticket, setTicket] = useState();
   const [activity, setActivity] = useState([]);
+  const [comments, setComments] = useState([]);
   const history = useHistory();
 
   const [badgeType, setBadgeType] = useState();
@@ -31,6 +34,22 @@ function Ticket(props) {
   const commentRef = useRef();
 
   const [editURL, setEditURL] = useState();
+
+  async function getUsers() {
+    await db
+      .collection("users")
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          let userData = doc.data();
+          userData.id = doc.id;
+          setUsers((users) => [...users, userData]);
+        });
+      })
+      .catch((error) => {
+        console.log("Error getting documents: ", error);
+      });
+  }
 
   async function getTicket() {
     await db
@@ -47,9 +66,6 @@ function Ticket(props) {
       })
       .then(() => {
         setEditURL("/ticket/edit/" + props.match.params.id);
-      })
-      .then(() => {
-        setActivity(ticket.activity);
       })
       .finally(() => {
         setLoading(false);
@@ -92,6 +108,9 @@ function Ticket(props) {
           setPriorityType("success");
           setPTextColor("light");
       }
+
+      setActivity(ticket.activity);
+      setComments(ticket.comments);
     }
   }
 
@@ -109,7 +128,7 @@ function Ticket(props) {
   }
 
   function assignTicket() {
-    if (ticket.ownedBy !== currentUser.email) {
+    if (ticket.ownedBy !== currentUser.email && user) {
       let assignMessage = "Assigned ticket to " + user.username;
 
       let newActivity = {
@@ -117,12 +136,12 @@ function Ticket(props) {
         activityData: [assignMessage],
       };
 
-      setActivity((activity) => [...activity, newActivity]);
+      setActivity((activity) => [...activity, [newActivity]]);
     }
   }
 
   function assignTicketToDB() {
-    if (ticket) {
+    if (ticket && user && user.role !== "User") {
       db.collection("tickets")
         .doc(ticket.id)
         .update({
@@ -133,6 +152,25 @@ function Ticket(props) {
         .then(() => {
           history.push("/");
         });
+    }
+  }
+
+  function assignCommentToDB() {
+    if (ticket && comments) {
+      try {
+        if (error === "") {
+          db.collection("tickets")
+            .doc(ticket.id)
+            .update({
+              comments: comments,
+            })
+            .then(() => {
+              history.push("/");
+            });
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
     }
   }
 
@@ -149,9 +187,31 @@ function Ticket(props) {
           console.log("No such document!");
         }
       })
+      .then(() => {
+        if (
+          (user && user.role == "Admin") ||
+          (user && user.role == "SuperAdmin")
+        ) {
+          getUsers();
+        }
+      })
       .catch((error) => {
         console.log("Error getting document:", error);
       });
+  }
+
+  function handleComment(e) {
+    e.preventDefault();
+    setError("");
+
+    let newComment = {
+      commentDate: currentTimestamp,
+      commentData: { array: commentRef.current.value.split("\n") },
+      commentUser: currentUser.email,
+      commentUsername: user.username,
+    };
+
+    setComments((comments) => [...comments, newComment]);
   }
 
   useEffect(() => {
@@ -166,6 +226,10 @@ function Ticket(props) {
   useEffect(() => {
     assignTicketToDB();
   }, [activity]);
+
+  useEffect(() => {
+    assignCommentToDB();
+  }, [comments]);
 
   return (
     <>
@@ -304,7 +368,7 @@ function Ticket(props) {
                                     <Row>
                                       <div className="py-2">
                                         <h5>Activity:</h5>
-                                        {ticket.activity ? (
+                                        {ticket.activity.length > 0 ? (
                                           ticket.activity
                                             .slice(0)
                                             .reverse()
@@ -342,17 +406,45 @@ function Ticket(props) {
                                     <Row>
                                       <div className="py-2">
                                         <h5>Comments:</h5>
-                                        {ticket.comments ? (
-                                          <>
-                                            <p>{ticket.comments}</p>{" "}
-                                          </>
+                                        {ticket.comments.length > 0 ? (
+                                          ticket.comments
+                                            .slice(0)
+                                            .reverse()
+                                            .map((t) => {
+                                              return (
+                                                <>
+                                                  <p key={t.commentDate}>
+                                                    {t.commentDate
+                                                      .toDate()
+                                                      .toLocaleString()}
+                                                  </p>
+                                                  <Container
+                                                    style={{
+                                                      fontSize: ".85em",
+                                                    }}
+                                                  >
+                                                    {Object.values(
+                                                      t.commentData
+                                                    ).map((data) => {
+                                                      return (
+                                                        <>
+                                                          {data.map((d) => {
+                                                            return <p>{d}</p>;
+                                                          })}
+                                                        </>
+                                                      );
+                                                    })}
+                                                  </Container>
+                                                </>
+                                              );
+                                            })
                                         ) : (
                                           <>No comments.</>
                                         )}
                                       </div>
 
-                                      <Form>
-                                        <Form.Group id="title">
+                                      <Form onSubmit={handleComment}>
+                                        <Form.Group id="comment">
                                           <FloatingLabel
                                             controlId="floatingInput"
                                             label="Leave a comment"
@@ -371,6 +463,13 @@ function Ticket(props) {
                                             />
                                           </FloatingLabel>
                                         </Form.Group>
+                                        <Button
+                                          style={{ padding: "15px" }}
+                                          className="w-100"
+                                          type="submit"
+                                        >
+                                          Comment
+                                        </Button>
                                       </Form>
                                     </Row>
                                   </Col>
@@ -392,31 +491,41 @@ function Ticket(props) {
                                       </div>
                                       <div className="py-2">
                                         <h5>Owner:</h5>
-                                        <p>{ticket.ownedByUsername}</p>
+                                        <p>{ticket.ownedBy}</p>
                                       </div>
                                     </Row>
-                                    <Row>
-                                      <div className="py-2">
-                                        <Dropdown>
-                                          <Dropdown.Toggle
-                                            variant="primary"
-                                            id="dropdown-basic"
-                                          >
-                                            Assign Ticket
-                                          </Dropdown.Toggle>
+                                    {user.role === "User" ? (
+                                      <>
+                                        <Row>
+                                          <div className="py-2">
+                                            <Dropdown>
+                                              <Dropdown.Toggle
+                                                variant="primary"
+                                                id="dropdown-basic"
+                                              >
+                                                Assign Ticket
+                                              </Dropdown.Toggle>
 
-                                          <Dropdown.Menu>
-                                            <Dropdown.Item
-                                              onClick={assignTicket}
-                                            >
-                                              {user.username}
-                                            </Dropdown.Item>
-                                          </Dropdown.Menu>
-                                        </Dropdown>
-                                      </div>
-                                    </Row>
+                                              <Dropdown.Menu>
+                                                <Dropdown.Item
+                                                  onClick={assignTicket}
+                                                >
+                                                  {user.username}
+                                                </Dropdown.Item>
+                                              </Dropdown.Menu>
+                                            </Dropdown>
+                                          </div>
+                                        </Row>
+                                      </>
+                                    ) : (
+                                      <></>
+                                    )}
+
                                     <Row>
-                                      {currentUser.email === ticket.ownedBy ? (
+                                      {user.username ===
+                                        ticket.ownedByUsername ||
+                                      user.role == "Admin" ||
+                                      user.role == "SuperAdmin" ? (
                                         <>
                                           <Dropdown>
                                             <Dropdown.Toggle

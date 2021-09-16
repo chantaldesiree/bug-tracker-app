@@ -30,11 +30,14 @@ function TicketPreviewContainer(props) {
               desc={t.desc}
               createdAt={t.createdAt.toDate().toLocaleString()}
               lastModifiedAt={t.lastModifiedAt.toDate().toLocaleString()}
+              submittedBy={t.submittedBy}
+              submittedByUsername={t.submittedByUsername}
               ownedBy={t.ownedBy}
               ownedByUsername={t.ownedByUsername}
               category={t.category}
               status={t.status}
               priority={t.priority}
+              user={props.user}
             />
           );
         })}

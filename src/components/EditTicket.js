@@ -45,6 +45,8 @@ function EditTicket(props) {
   ]);
   const stepsRef = useRef();
   const titleRef = useRef();
+  const actualRef = useRef();
+  const expectedRef = useRef();
   const descRef = useRef();
   const sourceURLRef = useRef();
 
@@ -87,13 +89,32 @@ function EditTicket(props) {
       );
     }
 
+    if (currentTicket[0].expectedResults !== expectedRef.current.value) {
+      activityArray.push(
+        user.username +
+          " changed the expected results to: " +
+          expectedRef.current.value
+      );
+    }
+
+    if (currentTicket[0].actualResults !== actualRef.current.value) {
+      activityArray.push(
+        user.username +
+          " changed the actual results to: " +
+          actualRef.current.value
+      );
+    }
+
     let newActivity = {
       activityDate: currentTimestamp,
       activityData: activityArray,
     };
+    if (activityArray.length > 0) {
+      setActivity((activity) => [...activity, newActivity]);
+    }
+  }
 
-    setActivity((activity) => [...activity, newActivity]);
-
+  useEffect(() => {
     try {
       if (error === "") {
         db.collection("tickets")
@@ -103,6 +124,8 @@ function EditTicket(props) {
             title: titleRef.current.value,
             desc: descRef.current.value,
             stepsToReproduce: stepsRef.current.value,
+            actualResults: actualRef.current.value,
+            expectedResults: expectedRef.current.value,
             activity: activity,
             comments: [],
             priority: priority,
@@ -122,7 +145,7 @@ function EditTicket(props) {
     } catch (error) {
       setError(error.message);
     }
-  }
+  }, [activity]);
 
   async function getUser() {
     await db
@@ -412,6 +435,7 @@ function EditTicket(props) {
                           <Form.Control
                             defaultValue={currentTicket[0].expectedResults}
                             className="text-light"
+                            ref={expectedRef}
                             style={{ backgroundColor: "#020a40" }}
                           />
                         </Form.Label>
@@ -427,6 +451,7 @@ function EditTicket(props) {
                           <Form.Control
                             defaultValue={currentTicket[0].actualResults}
                             className="text-light"
+                            ref={actualRef}
                             style={{ backgroundColor: "#020a40" }}
                           />
                         </Form.Label>

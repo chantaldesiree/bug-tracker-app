@@ -121,7 +121,10 @@ function TicketPreview(props) {
 
             <Dropdown.Menu>
               <Dropdown.Item href={url}>View Ticket</Dropdown.Item>
-              {currentUser.email === props.ownedBy ? (
+              {currentUser.email === props.submittedByUsername ||
+              currentUser === props.ownedByUsername ||
+              props.user.role == "Admin" ||
+              props.user.role == "SuperAdmin" ? (
                 <>
                   <Dropdown.Item href={editURL}>Edit Ticket</Dropdown.Item>
                   <Dropdown.Item onClick={deleteTicket}>
@@ -143,7 +146,7 @@ function TicketPreview(props) {
       </Row>
       <Row>
         <p style={{ fontSize: ".75em" }}>
-          Submitted by: <Link to="">{props.ownedByUsername}</Link> | Created:{" "}
+          Submitted by: <Link to="">{props.submittedBy}</Link> | Created:{" "}
           {props.createdAt} | Last Modified: {props.lastModifiedAt}| Last
           Modified by: <Link to="">{props.ownedByUsername}</Link>
         </p>
