@@ -10,6 +10,7 @@ import TicketPreviewContainer from "./TicketPreviewContainer";
 function MyTickets() {
   const { currentUser } = useAuth();
   const [ticket, setTicket] = useState();
+  const [user, setUser] = useState();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,10 +27,31 @@ function MyTickets() {
         });
       })
       .then(() => {
+        getUser();
+      })
+      .finally(() => {
         setLoading(false);
       })
       .catch((error) => {
         console.log("Error getting documents: ", error);
+      });
+  }
+
+  async function getUser() {
+    await db
+      .collection("users")
+      .doc(currentUser.email)
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          setUser(doc.data());
+        } else {
+          // doc.data() will be undefined in this case
+          console.log("No such document!");
+        }
+      })
+      .catch((error) => {
+        console.log("Error getting document:", error);
       });
   }
 
@@ -39,7 +61,7 @@ function MyTickets() {
 
   return (
     <>
-      {!loading ? (
+      {!loading && user ? (
         <>
           <Container
             style={{
@@ -67,7 +89,7 @@ function MyTickets() {
 
                 <Row style={{ color: "#e8ecfd" }}>
                   <Col>
-                    <TicketPreviewContainer tickets={tickets} />
+                    <TicketPreviewContainer tickets={tickets} user={user} />
                   </Col>
                 </Row>
               </Container>

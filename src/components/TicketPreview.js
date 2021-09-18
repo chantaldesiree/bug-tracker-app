@@ -49,11 +49,11 @@ function TicketPreview(props) {
           setPriorityType("danger");
           setPTextColor("light");
           break;
-        case "High-Priority":
+        case "High":
           setPriorityType("warning");
           setPTextColor("dark");
           break;
-        case "Medium-Priority":
+        case "Medium":
           setPriorityType("info");
           setPTextColor("dark");
           break;
@@ -146,9 +146,9 @@ function TicketPreview(props) {
       </Row>
       <Row>
         <p style={{ fontSize: ".75em" }}>
-          Submitted by: <Link to="">{props.submittedBy}</Link> | Created:{" "}
-          {props.createdAt} | Last Modified: {props.lastModifiedAt}| Last
-          Modified by: <Link to="">{props.ownedByUsername}</Link>
+          Submitted by: <Link to="">{props.submittedByUsername}</Link> |
+          Created: {props.createdAt} | Last Modified: {props.lastModifiedAt}|
+          Last Modified by: <Link to="">{props.ownedByUsername}</Link>
         </p>
       </Row>
     </Container>

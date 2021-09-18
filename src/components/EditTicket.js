@@ -30,11 +30,7 @@ function EditTicket(props) {
   const [loading, setLoading] = useState(true);
   const [activity, setActivity] = useState([]);
 
-  const [priorities, setPriorities] = useState([
-    "Emergency",
-    "High-Priority",
-    "Low-Priority",
-  ]);
+  const [priorities, setPriorities] = useState(["Emergency", "High", "Low"]);
   const [priority, setPriority] = useState();
   const [categoryTitle, setCategoryTitle] = useState();
 
@@ -59,7 +55,12 @@ function EditTicket(props) {
 
     if (currentTicket[0].priority !== priority) {
       activityArray.push(
-        user.username + " changed the priority to " + priority
+        user.username +
+          " changed the priority from " +
+          currentTicket[0].priority +
+          " to " +
+          priority +
+          "."
       );
     }
 
@@ -127,18 +128,12 @@ function EditTicket(props) {
             actualResults: actualRef.current.value,
             expectedResults: expectedRef.current.value,
             activity: activity,
-            comments: [],
             priority: priority,
             category: categoryTitle,
             sourceURL: sourceURLRef.current.value,
             status: "Open",
           })
           .then(() => {
-            db.collection("ticketCounter")
-              .doc("currentCount")
-              .update({
-                count: firebase.firestore.FieldValue.increment(1),
-              });
             history.push("/");
           });
       }

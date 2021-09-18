@@ -28,9 +28,9 @@ function CreateTicket() {
 
   const [priorities, setPriorities] = useState([
     "Emergency",
-    "High-Priority",
-    "Medium-Priority",
-    "Low-Priority",
+    "High",
+    "Medium",
+    "Low",
   ]);
   const [priority, setPriority] = useState("Priority");
 

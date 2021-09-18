@@ -34,6 +34,7 @@ function Ticket(props) {
   const commentRef = useRef();
 
   const [editURL, setEditURL] = useState();
+  const [status, setStatus] = useState();
 
   async function getUsers() {
     await db
@@ -43,6 +44,7 @@ function Ticket(props) {
         querySnapshot.forEach((doc) => {
           let userData = doc.data();
           userData.id = doc.id;
+          console.log(doc.data().username);
           setUsers((users) => [...users, userData]);
         });
       })
@@ -96,11 +98,11 @@ function Ticket(props) {
           setPriorityType("danger");
           setPTextColor("light");
           break;
-        case "High-Priority":
+        case "High":
           setPriorityType("warning");
           setPTextColor("dark");
           break;
-        case "Medium-Priority":
+        case "Medium":
           setPriorityType("info");
           setPTextColor("dark");
           break;
@@ -111,6 +113,7 @@ function Ticket(props) {
 
       setActivity(ticket.activity);
       setComments(ticket.comments);
+      setStatus(ticket.status);
     }
   }
 
@@ -174,6 +177,25 @@ function Ticket(props) {
     }
   }
 
+  async function assignStatus(e) {
+    if (ticket) {
+      try {
+        if (e === "Open" || e === "Closed") {
+          db.collection("tickets")
+            .doc(ticket.id)
+            .update({
+              status: e,
+            })
+            .then(() => {
+              history.push("/");
+            });
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+  }
+
   async function getUser() {
     await db
       .collection("users")
@@ -187,14 +209,7 @@ function Ticket(props) {
           console.log("No such document!");
         }
       })
-      .then(() => {
-        if (
-          (user && user.role == "Admin") ||
-          (user && user.role == "SuperAdmin")
-        ) {
-          getUsers();
-        }
-      })
+      .then(() => {})
       .catch((error) => {
         console.log("Error getting document:", error);
       });
@@ -220,6 +235,12 @@ function Ticket(props) {
   }, []);
 
   useEffect(() => {
+    if ((user && user.role == "Admin") || (user && user.role == "SuperAdmin")) {
+      getUsers();
+    }
+  }, [user]);
+
+  useEffect(() => {
     setBadges();
   }, [ticket]);
 
@@ -233,7 +254,7 @@ function Ticket(props) {
 
   return (
     <>
-      {!loading && user ? (
+      {!loading && user && users && comments ? (
         <>
           <Container
             style={{
@@ -303,8 +324,10 @@ function Ticket(props) {
                                 <p style={{ fontSize: 11 }}>
                                   {" "}
                                   Submitted by:{" "}
-                                  <Link to="">{ticket.ownedByUsername}</Link> |
-                                  Created:{" "}
+                                  <Link to="">
+                                    {ticket.submittedByUsername}
+                                  </Link>{" "}
+                                  | Created:{" "}
                                   {ticket.createdAt.toDate().toLocaleString()} |
                                   Last Modified:{" "}
                                   {ticket.lastModifiedAt
@@ -429,7 +452,9 @@ function Ticket(props) {
                                                       return (
                                                         <>
                                                           {data.map((d) => {
-                                                            return <p>{d}</p>;
+                                                            return (
+                                                              <div>{d}</div>
+                                                            );
                                                           })}
                                                         </>
                                                       );
@@ -487,33 +512,109 @@ function Ticket(props) {
 
                                       <div className="py-2">
                                         <h5>Status:</h5>
-                                        <p>{ticket.status}</p>
+                                        {user.role === "Admin" ||
+                                        user.role === "SuperAdmin" ? (
+                                          <>
+                                            <Dropdown>
+                                              <Dropdown.Toggle
+                                                variant="primary"
+                                                id="dropdown"
+                                              >
+                                                {status}
+                                              </Dropdown.Toggle>
+                                              <Dropdown.Menu>
+                                                <Dropdown.Item
+                                                  onClick={(e) => {
+                                                    assignStatus(
+                                                      e.target.innerText
+                                                    );
+                                                  }}
+                                                >
+                                                  Open
+                                                </Dropdown.Item>
+                                                <Dropdown.Item
+                                                  onClick={(e) => {
+                                                    assignStatus(
+                                                      e.target.innerText
+                                                    );
+                                                  }}
+                                                >
+                                                  Closed
+                                                </Dropdown.Item>
+                                              </Dropdown.Menu>
+                                            </Dropdown>
+                                          </>
+                                        ) : (
+                                          <>{status}</>
+                                        )}
                                       </div>
                                       <div className="py-2">
                                         <h5>Owner:</h5>
                                         <p>{ticket.ownedBy}</p>
                                       </div>
                                     </Row>
-                                    {user.role === "User" ? (
+                                    {user.role !== "User" ? (
                                       <>
                                         <Row>
                                           <div className="py-2">
-                                            <Dropdown>
-                                              <Dropdown.Toggle
-                                                variant="primary"
-                                                id="dropdown-basic"
-                                              >
-                                                Assign Ticket
-                                              </Dropdown.Toggle>
+                                            {user.role === "Support" ? (
+                                              <>
+                                                <Dropdown>
+                                                  <Dropdown.Toggle
+                                                    variant="primary"
+                                                    id="dropdown-basic"
+                                                  >
+                                                    Assign Ticket
+                                                  </Dropdown.Toggle>
 
-                                              <Dropdown.Menu>
-                                                <Dropdown.Item
-                                                  onClick={assignTicket}
-                                                >
-                                                  {user.username}
-                                                </Dropdown.Item>
-                                              </Dropdown.Menu>
-                                            </Dropdown>
+                                                  <Dropdown.Menu>
+                                                    <Dropdown.Item
+                                                      onSelect={assignTicket}
+                                                    >
+                                                      {user.username}
+                                                    </Dropdown.Item>
+                                                  </Dropdown.Menu>
+                                                </Dropdown>
+                                              </>
+                                            ) : (
+                                              <>
+                                                {users ? (
+                                                  <>
+                                                    <Dropdown>
+                                                      <Dropdown.Toggle
+                                                        variant="primary"
+                                                        id="dropdown-basic"
+                                                      >
+                                                        Assign Ticket
+                                                      </Dropdown.Toggle>
+                                                      <Dropdown.Menu>
+                                                        {users.map((u) => {
+                                                          if (
+                                                            u.role !== "User"
+                                                          ) {
+                                                            return (
+                                                              <Dropdown.Item
+                                                                onClick={
+                                                                  assignTicket
+                                                                }
+                                                              >
+                                                                {console.log(
+                                                                  "u: " +
+                                                                    u.username
+                                                                )}
+                                                                {u.username}
+                                                              </Dropdown.Item>
+                                                            );
+                                                          }
+                                                        })}
+                                                      </Dropdown.Menu>
+                                                    </Dropdown>
+                                                  </>
+                                                ) : (
+                                                  <></>
+                                                )}
+                                              </>
+                                            )}
                                           </div>
                                         </Row>
                                       </>
