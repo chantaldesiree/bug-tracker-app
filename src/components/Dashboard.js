@@ -36,9 +36,27 @@ function Dashboard() {
   }
 
   async function getLastTicket() {
+    if (user && user.role !== "User") {
+      await db
+        .collection("tickets")
+        .where("ownedBy", "==", currentUser.email)
+        .orderBy("lastModifiedAt", "desc")
+        .limit(1)
+        .get()
+        .then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            let ticketData = doc.data();
+            setLastTicket((lastTicket) => [...lastTicket, ticketData]);
+          });
+        })
+        .then(() => {})
+        .catch((error) => {
+          console.log("Error getting documents: ", error);
+        });
+    }
     await db
       .collection("tickets")
-      .where("ownedBy", "==", currentUser.email)
+      .where("submittedBy", "==", currentUser.email)
       .orderBy("lastModifiedAt", "desc")
       .limit(1)
       .get()

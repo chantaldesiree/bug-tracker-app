@@ -39,6 +39,10 @@ function TicketPreview(props) {
           setBadgeType("dark");
           setBTextColor("light");
           break;
+        case "Design":
+          setBadgeType("light");
+          setBTextColor("dark");
+          break;
         default:
           setBadgeType("secondary");
           setBTextColor("light");

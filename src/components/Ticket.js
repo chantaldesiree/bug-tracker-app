@@ -35,22 +35,25 @@ function Ticket(props) {
 
   const [editURL, setEditURL] = useState();
   const [status, setStatus] = useState();
+  const [prevStatus, setPrevStatus] = useState();
+  const [assignee, setAssignee] = useState();
 
   async function getUsers() {
-    await db
-      .collection("users")
-      .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          let userData = doc.data();
-          userData.id = doc.id;
-          console.log(doc.data().username);
-          setUsers((users) => [...users, userData]);
+    if (users.length === 0) {
+      await db
+        .collection("users")
+        .get()
+        .then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            let userData = doc.data();
+            userData.id = doc.id;
+            setUsers((users) => [...users, userData]);
+          });
+        })
+        .catch((error) => {
+          console.log("Error getting documents: ", error);
         });
-      })
-      .catch((error) => {
-        console.log("Error getting documents: ", error);
-      });
+    }
   }
 
   async function getTicket() {
@@ -79,6 +82,7 @@ function Ticket(props) {
 
   function setBadges() {
     if (ticket) {
+      console.log(ticket.category);
       switch (ticket.category) {
         case "Bug":
           setBadgeType("primary");
@@ -87,6 +91,10 @@ function Ticket(props) {
         case "Account Issue":
           setBadgeType("dark");
           setBTextColor("light");
+          break;
+        case "Design":
+          setBadgeType("light");
+          setBTextColor("dark");
           break;
         default:
           setBadgeType("secondary");
@@ -114,6 +122,7 @@ function Ticket(props) {
       setActivity(ticket.activity);
       setComments(ticket.comments);
       setStatus(ticket.status);
+      setPrevStatus(ticket.status);
     }
   }
 
@@ -130,32 +139,8 @@ function Ticket(props) {
       });
   }
 
-  function assignTicket() {
-    if (ticket.ownedBy !== currentUser.email && user) {
-      let assignMessage = "Assigned ticket to " + user.username;
-
-      let newActivity = {
-        activityDate: currentTimestamp,
-        activityData: [assignMessage],
-      };
-
-      setActivity((activity) => [...activity, [newActivity]]);
-    }
-  }
-
-  function assignTicketToDB() {
-    if (ticket && user && user.role !== "User") {
-      db.collection("tickets")
-        .doc(ticket.id)
-        .update({
-          ownedBy: currentUser.email,
-          ownedByUsername: user.username,
-          activity: activity,
-        })
-        .then(() => {
-          history.push("/");
-        });
-    }
+  function assignTicket(e) {
+    setAssignee(users.find(({ username }) => username === e.target.innerText));
   }
 
   function assignCommentToDB() {
@@ -178,7 +163,7 @@ function Ticket(props) {
   }
 
   async function assignStatus(e) {
-    if (ticket) {
+    if (ticket && ticket.status !== e) {
       try {
         if (e === "Open" || e === "Closed") {
           db.collection("tickets")
@@ -187,7 +172,7 @@ function Ticket(props) {
               status: e,
             })
             .then(() => {
-              history.push("/");
+              setStatus(e);
             });
         }
       } catch (error) {
@@ -245,7 +230,50 @@ function Ticket(props) {
   }, [ticket]);
 
   useEffect(() => {
-    assignTicketToDB();
+    if (user && status !== prevStatus) {
+      let statusMessage = "Ticket status set to " + status;
+
+      let newActivity = {
+        activityDate: currentTimestamp,
+        activityData: [statusMessage],
+      };
+
+      setActivity((activity) => [...activity, newActivity]);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (assignee) {
+      let assignMessage =
+        user.username + " assigned ticket to " + assignee.username;
+
+      let newActivity = {
+        activityDate: currentTimestamp,
+        activityData: [assignMessage],
+      };
+
+      if (ticket && user && user.role !== "User" && assignee && activity) {
+        db.collection("tickets").doc(ticket.id).update({
+          ownedBy: assignee.id,
+          ownedByUsername: assignee.username,
+        });
+
+        setActivity((activity) => [...activity, newActivity]);
+      }
+    }
+  }, [assignee]);
+
+  useEffect(() => {
+    if (ticket && user && user.role !== "User") {
+      db.collection("tickets")
+        .doc(ticket.id)
+        .update({
+          activity: activity,
+        })
+        .then(() => {
+          history.push("/");
+        });
+    }
   }, [activity]);
 
   useEffect(() => {
@@ -598,10 +626,6 @@ function Ticket(props) {
                                                                   assignTicket
                                                                 }
                                                               >
-                                                                {console.log(
-                                                                  "u: " +
-                                                                    u.username
-                                                                )}
                                                                 {u.username}
                                                               </Dropdown.Item>
                                                             );

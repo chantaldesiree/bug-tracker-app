@@ -38,6 +38,7 @@ function CreateTicket() {
   const [categories, setCategories] = useState([
     "Bug",
     "Account Issue",
+    "Design",
     "Other",
   ]);
   const stepsRef = useRef();

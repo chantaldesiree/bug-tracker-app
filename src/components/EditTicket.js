@@ -30,13 +30,19 @@ function EditTicket(props) {
   const [loading, setLoading] = useState(true);
   const [activity, setActivity] = useState([]);
 
-  const [priorities, setPriorities] = useState(["Emergency", "High", "Low"]);
+  const [priorities, setPriorities] = useState([
+    "Emergency",
+    "High",
+    "Medium",
+    "Low",
+  ]);
   const [priority, setPriority] = useState();
   const [categoryTitle, setCategoryTitle] = useState();
 
   const [categories, setCategories] = useState([
     "Bug",
     "Account Issue",
+    "Design",
     "Other",
   ]);
   const stepsRef = useRef();
